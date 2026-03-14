@@ -1,0 +1,5 @@
+# Keep external reference repositories local only
+reference_repo/
+
+# macOS metadata
+.DS_Store
