@@ -31,6 +31,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define VGA_VSYNC_PORT GPIOB
+#define VGA_VSYNC_PIN  GPIO_PIN_8
+#define HSYNC_PULSE_TICKS 384U
 
 /* USER CODE END PD */
 
@@ -56,6 +59,7 @@ static void MX_DMA_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
+static void VGA_StartSyncSignals(void);
 
 /* USER CODE END PFP */
 
@@ -78,8 +82,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	MX_GPIO_Init();
-	MX_TIM4_Init();
 
   /* USER CODE END 1 */
 
@@ -105,6 +107,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+  VGA_StartSyncSignals();
 
   /* USER CODE END 2 */
 
@@ -529,6 +532,44 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void VGA_StartSyncSignals(void)
+{
+  current_line = (uint16_t)(V_TOTAL_LINES - 1U);
+  HAL_GPIO_WritePin(VGA_VSYNC_PORT, VGA_VSYNC_PIN, GPIO_PIN_SET);
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, HSYNC_PULSE_TICKS);
+  htim4.Instance->CCER |= TIM_CCER_CC4P;
+
+  if (HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  __HAL_TIM_CLEAR_IT(&htim4, TIM_IT_UPDATE);
+  __HAL_TIM_ENABLE_IT(&htim4, TIM_IT_UPDATE);
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance != TIM4)
+  {
+    return;
+  }
+
+  current_line++;
+  if (current_line >= V_TOTAL_LINES)
+  {
+    current_line = 0U;
+  }
+
+  if (current_line < V_SYNC_LINES)
+  {
+    HAL_GPIO_WritePin(VGA_VSYNC_PORT, VGA_VSYNC_PIN, GPIO_PIN_RESET);
+  }
+  else
+  {
+    HAL_GPIO_WritePin(VGA_VSYNC_PORT, VGA_VSYNC_PIN, GPIO_PIN_SET);
+  }
+}
 
 /* USER CODE END 4 */
 
