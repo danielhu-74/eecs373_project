@@ -3,3 +3,7 @@ reference_repo/
 
 # macOS metadata
 .DS_Store
+
+# Build artifacts and local archives
+try/Debug/
+*.zip
