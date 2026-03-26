@@ -34,8 +34,6 @@
 #define VGA_VSYNC_PORT GPIOB
 #define VGA_VSYNC_PIN  GPIO_PIN_8
 #define HSYNC_PULSE_TICKS 384U
-#define VSYNC_LOW()  (VGA_VSYNC_PORT->BSRR = (uint32_t)VGA_VSYNC_PIN << 16)
-#define VSYNC_HIGH() (VGA_VSYNC_PORT->BSRR = VGA_VSYNC_PIN)
 
 /* USER CODE END PD */
 
@@ -605,8 +603,8 @@ static void VGA_InitStripeBuffers(void)
 static void VGA_StartVideo(void)
 {
   current_line = (uint16_t)(V_TOTAL_LINES - 1U);
-  VSYNC_LOW();
-  GPIOD->BSRR = (uint32_t)GPIO_PIN_15 << 16;
+  HAL_GPIO_WritePin(VGA_VSYNC_PORT, VGA_VSYNC_PIN, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
   __HAL_TIM_SET_COUNTER(&htim2, 0U);
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, HSYNC_PULSE_TICKS);
 
@@ -645,21 +643,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     current_line = 0U;
   }
 
-  if (current_line == 0U)
+  if (current_line < V_SYNC_LINES)
   {
-    VSYNC_HIGH();
+    HAL_GPIO_WritePin(VGA_VSYNC_PORT, VGA_VSYNC_PIN, GPIO_PIN_SET);
   }
-  else if (current_line == V_SYNC_LINES)
+  else
   {
-    VSYNC_LOW();
+    HAL_GPIO_WritePin(VGA_VSYNC_PORT, VGA_VSYNC_PIN, GPIO_PIN_RESET);
   }
 
-  if (current_line == V_VISIBLE_LINE_START)
+  if ((current_line >= V_VISIBLE_LINE_START) && (current_line < V_VISIBLE_LINE_END))
   {
-    active_line_src = visible_line_buffer;
-    hdma_tim2_up.Instance->CMAR = (uint32_t)active_line_src;
+    if (active_line_src != visible_line_buffer)
+    {
+      active_line_src = visible_line_buffer;
+      hdma_tim2_up.Instance->CMAR = (uint32_t)active_line_src;
+    }
   }
-  else if (current_line == V_VISIBLE_LINE_END)
+  else if (active_line_src != blank_line_buffer)
   {
     active_line_src = blank_line_buffer;
     hdma_tim2_up.Instance->CMAR = (uint32_t)active_line_src;
