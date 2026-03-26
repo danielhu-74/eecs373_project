@@ -89,11 +89,11 @@ static void VGA_StartVideo(void);
 #define V_VISIBLE_LINE_END   (V_VISIBLE_LINE_START + V_VISIBLE_LINES)
 
 #define STRIPE_WIDTH_SAMPLES 4U
+#define TIM2_LINE_SYNC_TRIGGER TIM_TS_ITR3
 
 volatile uint16_t current_line = 0;
 static uint8_t blank_line_buffer[H_PIXEL];
 static uint8_t visible_line_buffer[H_PIXEL];
-static uint32_t tim2_cnt_reset_word = 0U;
 static const uint8_t *active_line_src = 0;
 /* USER CODE END 0 */
 
@@ -209,6 +209,7 @@ static void MX_TIM2_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
@@ -231,6 +232,17 @@ static void MX_TIM2_Init(void)
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Reset TIM2 at each TIM4 update to remove the line-start DMA phase walk. */
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+  sSlaveConfig.InputTrigger = TIM2_LINE_SYNC_TRIGGER;
+  sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_NONINVERTED;
+  sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
+  sSlaveConfig.TriggerFilter = 0;
+  if (HAL_TIM_SlaveConfigSynchro(&htim2, &sSlaveConfig) != HAL_OK)
   {
     Error_Handler();
   }
@@ -268,7 +280,7 @@ static void MX_TIM4_Init(void)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
   {
@@ -581,18 +593,12 @@ static void VGA_StartVideo(void)
   __HAL_TIM_SET_COUNTER(&htim2, 0U);
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, HSYNC_PULSE_TICKS);
 
-  if (HAL_DMA_Start(&hdma_tim4_up, (uint32_t)&tim2_cnt_reset_word, (uint32_t)&TIM2->CNT, 1U) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
   active_line_src = blank_line_buffer;
   if (HAL_DMA_Start(&hdma_tim2_up, (uint32_t)active_line_src, (uint32_t)&GPIOA->ODR, H_PIXEL) != HAL_OK)
   {
     Error_Handler();
   }
 
-  __HAL_TIM_ENABLE_DMA(&htim4, TIM_DMA_UPDATE);
   __HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_UPDATE);
 
   if (HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4) != HAL_OK)
