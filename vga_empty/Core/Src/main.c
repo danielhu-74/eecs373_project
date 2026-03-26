@@ -89,6 +89,7 @@ static void VGA_StartVideo(void);
 #define V_VISIBLE_LINE_END   (V_VISIBLE_LINE_START + V_VISIBLE_LINES)
 
 #define STRIPE_WIDTH_SAMPLES 4U
+#define H_PHASE_OFFSET_SAMPLES (-2)
 #define TIM2_LINE_SYNC_TRIGGER TIM_TS_ITR3
 
 volatile uint16_t current_line = 0;
@@ -570,7 +571,23 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void VGA_InitStripeBuffers(void)
 {
+  int32_t visible_start_i;
+  uint16_t visible_start;
+  uint16_t visible_end;
   uint16_t h;
+
+  visible_start_i = (int32_t)H_VISIBLE_START + (int32_t)H_PHASE_OFFSET_SAMPLES;
+  if (visible_start_i < (int32_t)H_SYNC)
+  {
+    visible_start_i = (int32_t)H_SYNC;
+  }
+  if (visible_start_i > (int32_t)(H_PIXEL - H_VISIBLE))
+  {
+    visible_start_i = (int32_t)(H_PIXEL - H_VISIBLE);
+  }
+
+  visible_start = (uint16_t)visible_start_i;
+  visible_end = (uint16_t)(visible_start + H_VISIBLE);
 
   for (h = 0; h < H_PIXEL; ++h)
   {
@@ -578,9 +595,9 @@ static void VGA_InitStripeBuffers(void)
     visible_line_buffer[h] = COLOR_BLACK;
   }
 
-  for (h = H_VISIBLE_START; h < H_VISIBLE_END; ++h)
+  for (h = visible_start; h < visible_end; ++h)
   {
-    uint16_t x = (uint16_t)(h - H_VISIBLE_START);
+    uint16_t x = (uint16_t)(h - visible_start);
     visible_line_buffer[h] = (((x / STRIPE_WIDTH_SAMPLES) & 1U) == 0U) ? COLOR_RED : COLOR_GREEN;
   }
 }
