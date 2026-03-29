@@ -59,7 +59,7 @@ static void MX_DMA_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
-static void VGA_InitCheckerBuffers(void);
+static void VGA_InitTestPatternBuffers(void);
 static void VGA_StartVideo(void);
 static const uint8_t *VGA_GetVisibleLineBuffer(uint16_t line);
 
@@ -87,6 +87,8 @@ static const uint8_t *VGA_GetVisibleLineBuffer(uint16_t line);
 #define V_VISIBLE_LINE_START (V_SYNC_LINES + V_BACKPORCH_LINES)
 #define V_VISIBLE_LINE_END   (V_VISIBLE_LINE_START + V_VISIBLE_LINES)
 
+#define VGA_USE_HSE_BYPASS_CLOCK 0U /* Set to 1 only after routing the Nucleo HSE input to ST-LINK MCO. */
+#define VGA_TEST_PATTERN_SINGLE_EDGE 1U
 #define CHECKER_BLOCK_WIDTH_SAMPLES 4U
 #define CHECKER_BLOCK_HEIGHT_LINES 32U
 #define H_PHASE_OFFSET_SAMPLES (-2)
@@ -132,7 +134,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  VGA_InitCheckerBuffers();
+  VGA_InitTestPatternBuffers();
   VGA_StartVideo();
 
   /* USER CODE END 2 */
@@ -167,13 +169,21 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
+#if VGA_USE_HSE_BYPASS_CLOCK
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 1;
+  RCC_OscInitStruct.PLL.PLLN = 30;
+#else
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 1;
   RCC_OscInitStruct.PLL.PLLN = 15;
+#endif
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -570,7 +580,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-static void VGA_InitCheckerBuffers(void)
+static void VGA_InitTestPatternBuffers(void)
 {
   int32_t visible_start_i;
   uint16_t visible_start;
@@ -600,11 +610,19 @@ static void VGA_InitCheckerBuffers(void)
   for (h = visible_start; h < visible_end; ++h)
   {
     uint16_t x = (uint16_t)(h - visible_start);
+#if VGA_TEST_PATTERN_SINGLE_EDGE
+    uint8_t base_color;
+
+    base_color = (x < (H_VISIBLE / 2U)) ? COLOR_RED : COLOR_GREEN;
+    visible_line_buffer_phase0[h] = base_color;
+    visible_line_buffer_phase1[h] = base_color;
+#else
     uint8_t base_color;
 
     base_color = (((x / CHECKER_BLOCK_WIDTH_SAMPLES) & 1U) == 0U) ? COLOR_RED : COLOR_GREEN;
     visible_line_buffer_phase0[h] = base_color;
     visible_line_buffer_phase1[h] = (base_color == COLOR_RED) ? COLOR_GREEN : COLOR_RED;
+#endif
   }
 }
 
