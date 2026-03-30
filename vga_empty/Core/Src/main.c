@@ -92,13 +92,13 @@ static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line);
 #define CHECKER_BLOCK_WIDTH_SAMPLES 4U
 #define CHECKER_BLOCK_HEIGHT_LINES 32U
 #define H_PHASE_OFFSET_SAMPLES (-2)
-#define TIM2_LINE_SYNC_TRIGGER TIM_TS_ITR3
 
 volatile uint16_t current_line = 0;
 static uint32_t blank_line_buffer[H_PIXEL];
 static uint32_t visible_line_buffer_phase0[H_PIXEL];
 static uint32_t visible_line_buffer_phase1[H_PIXEL];
 static const uint32_t *active_line_src = 0;
+static uint32_t tim2_cnt_reset_word = 0U;
 
 static uint32_t VGA_ColorToBsrr(uint8_t color)
 {
@@ -231,7 +231,6 @@ static void MX_TIM2_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
@@ -258,16 +257,6 @@ static void MX_TIM2_Init(void)
     Error_Handler();
   }
 
-  /* Reset TIM2 at each TIM4 update to remove the line-start DMA phase walk. */
-  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-  sSlaveConfig.InputTrigger = TIM2_LINE_SYNC_TRIGGER;
-  sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_NONINVERTED;
-  sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1;
-  sSlaveConfig.TriggerFilter = 0;
-  if (HAL_TIM_SlaveConfigSynchro(&htim2, &sSlaveConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
@@ -652,18 +641,24 @@ static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line)
 static void VGA_StartVideo(void)
 {
   current_line = (uint16_t)(V_TOTAL_LINES - 1U);
-  HAL_GPIO_WritePin(VGA_VSYNC_PORT, VGA_VSYNC_PIN, GPIO_PIN_RESET);
+  VGA_VSYNC_PORT->BSRR = (uint32_t)VGA_VSYNC_PIN << 16U;
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
   __HAL_TIM_SET_COUNTER(&htim2, 0U);
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, HSYNC_PULSE_TICKS);
 
   active_line_src = blank_line_buffer;
+  if (HAL_DMA_Start(&hdma_tim4_up, (uint32_t)&tim2_cnt_reset_word, (uint32_t)&TIM2->CNT, 1U) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
   if (HAL_DMA_Start(&hdma_tim2_up, (uint32_t)active_line_src, (uint32_t)&GPIOA->BSRR, H_PIXEL) != HAL_OK)
   {
     Error_Handler();
   }
 
   __HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_UPDATE);
+  __HAL_TIM_ENABLE_DMA(&htim4, TIM_DMA_UPDATE);
 
   if (HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4) != HAL_OK)
   {
@@ -692,13 +687,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     current_line = 0U;
   }
 
-  if (current_line < V_SYNC_LINES)
+  if (current_line == 0U)
   {
-    HAL_GPIO_WritePin(VGA_VSYNC_PORT, VGA_VSYNC_PIN, GPIO_PIN_SET);
+    VGA_VSYNC_PORT->BSRR = VGA_VSYNC_PIN;
   }
-  else
+  else if (current_line == V_SYNC_LINES)
   {
-    HAL_GPIO_WritePin(VGA_VSYNC_PORT, VGA_VSYNC_PIN, GPIO_PIN_RESET);
+    VGA_VSYNC_PORT->BSRR = (uint32_t)VGA_VSYNC_PIN << 16U;
   }
 
   if ((current_line >= V_VISIBLE_LINE_START) && (current_line < V_VISIBLE_LINE_END))
