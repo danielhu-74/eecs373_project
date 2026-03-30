@@ -21,7 +21,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "vga.h"
 
 /* USER CODE END Includes */
 
@@ -32,6 +31,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define VGA_VSYNC_PORT GPIOB
+#define VGA_VSYNC_PIN  GPIO_PIN_8
+#define HSYNC_PULSE_TICKS 384U
 
 /* USER CODE END PD */
 
@@ -57,12 +59,56 @@ static void MX_DMA_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
+static void VGA_InitTestPatternBuffers(void);
+static void VGA_StartVideo(void);
+static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#define COLOR_BLACK ((uint8_t)0x00U)
+#define COLOR_RED   ((uint8_t)GPIO_PIN_5)
+#define COLOR_GREEN ((uint8_t)GPIO_PIN_7)
+
+#define H_SYNC       (128U / 8U)
+#define H_BACKPORCH  (88U / 8U)
+#define H_VISIBLE    (800U / 8U)
+#define H_FRONTPORCH (40U / 8U)
+#define H_PIXEL      (H_SYNC + H_BACKPORCH + H_VISIBLE + H_FRONTPORCH)
+#define H_VISIBLE_START (H_SYNC + H_BACKPORCH)
+#define H_VISIBLE_END   (H_VISIBLE_START + H_VISIBLE)
+
+#define V_SYNC_LINES 4U
+#define V_BACKPORCH_LINES 23U
+#define V_VISIBLE_LINES 600U
+#define V_FRONTPORCH_LINES 1U
+#define V_TOTAL_LINES (V_SYNC_LINES + V_BACKPORCH_LINES + V_VISIBLE_LINES + V_FRONTPORCH_LINES)
+#define V_VISIBLE_LINE_START (V_SYNC_LINES + V_BACKPORCH_LINES)
+#define V_VISIBLE_LINE_END   (V_VISIBLE_LINE_START + V_VISIBLE_LINES)
+
 #define VGA_USE_HSE_BYPASS_CLOCK 0U /* Set to 1 only after routing the Nucleo HSE input to ST-LINK MCO. */
+#define VGA_TEST_PATTERN_SINGLE_EDGE 1U
+#define CHECKER_BLOCK_WIDTH_SAMPLES 4U
+#define CHECKER_BLOCK_HEIGHT_LINES 32U
+#define H_PHASE_OFFSET_SAMPLES (-2)
+
+volatile uint16_t current_line = 0;
+static uint32_t blank_line_buffer[H_PIXEL];
+static uint32_t visible_line_buffer_phase0[H_PIXEL];
+static uint32_t visible_line_buffer_phase1[H_PIXEL];
+static const uint32_t *active_line_src = 0;
+static uint32_t tim2_cnt_reset_word = 0U;
+
+static uint32_t VGA_ColorToBsrr(uint8_t color)
+{
+  uint32_t set_mask;
+  uint32_t reset_mask;
+
+  set_mask = (uint32_t)(color & (COLOR_RED | COLOR_GREEN));
+  reset_mask = (uint32_t)((COLOR_RED | COLOR_GREEN) & (uint8_t)(~color));
+  return set_mask | (reset_mask << 16U);
+}
 /* USER CODE END 0 */
 
 /**
@@ -98,15 +144,8 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  /* Example scene showing how gameplay code can use the VGA API. */
-  VGA_Init();
-  VGA_Clear(VGA_COLOR_BLACK);
-  VGA_DrawRect(0, 0, VGA_WIDTH, VGA_HEIGHT, VGA_COLOR_GREEN);
-  VGA_DrawLine(0, 0, (int16_t)(VGA_WIDTH - 1U), (int16_t)(VGA_HEIGHT - 1U), VGA_COLOR_YELLOW);
-  VGA_DrawLine(0, (int16_t)(VGA_HEIGHT - 1U), (int16_t)(VGA_WIDTH - 1U), 0, VGA_COLOR_YELLOW);
-  VGA_FillRect(4, 4, 16, 10, VGA_COLOR_RED);
-  VGA_FillRect((int16_t)(VGA_WIDTH - 20U), (int16_t)(VGA_HEIGHT - 14U), 16, 10, VGA_COLOR_GREEN);
-  VGA_Start();
+  VGA_InitTestPatternBuffers();
+  VGA_StartVideo();
 
   /* USER CODE END 2 */
 
@@ -539,11 +578,139 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
+/* USER CODE BEGIN 4 */
+static void VGA_InitTestPatternBuffers(void)
+{
+  int32_t visible_start_i;
+  uint16_t visible_start;
+  uint16_t visible_end;
+  uint16_t h;
+
+  visible_start_i = (int32_t)H_VISIBLE_START + (int32_t)H_PHASE_OFFSET_SAMPLES;
+  if (visible_start_i < (int32_t)H_SYNC)
+  {
+    visible_start_i = (int32_t)H_SYNC;
+  }
+  if (visible_start_i > (int32_t)(H_PIXEL - H_VISIBLE))
+  {
+    visible_start_i = (int32_t)(H_PIXEL - H_VISIBLE);
+  }
+
+  visible_start = (uint16_t)visible_start_i;
+  visible_end = (uint16_t)(visible_start + H_VISIBLE);
+
+  for (h = 0; h < H_PIXEL; ++h)
+  {
+    blank_line_buffer[h] = VGA_ColorToBsrr(COLOR_BLACK);
+    visible_line_buffer_phase0[h] = VGA_ColorToBsrr(COLOR_BLACK);
+    visible_line_buffer_phase1[h] = VGA_ColorToBsrr(COLOR_BLACK);
+  }
+
+  for (h = visible_start; h < visible_end; ++h)
+  {
+    uint16_t x = (uint16_t)(h - visible_start);
+#if VGA_TEST_PATTERN_SINGLE_EDGE
+    uint8_t base_color;
+
+    base_color = (x < (H_VISIBLE / 2U)) ? COLOR_RED : COLOR_GREEN;
+    visible_line_buffer_phase0[h] = VGA_ColorToBsrr(base_color);
+    visible_line_buffer_phase1[h] = VGA_ColorToBsrr(base_color);
+#else
+    uint8_t base_color;
+
+    base_color = (((x / CHECKER_BLOCK_WIDTH_SAMPLES) & 1U) == 0U) ? COLOR_RED : COLOR_GREEN;
+    visible_line_buffer_phase0[h] = VGA_ColorToBsrr(base_color);
+    visible_line_buffer_phase1[h] = VGA_ColorToBsrr((base_color == COLOR_RED) ? COLOR_GREEN : COLOR_RED);
+#endif
+  }
+}
+
+static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line)
+{
+  uint16_t visible_line_index;
+
+  visible_line_index = (uint16_t)(line - V_VISIBLE_LINE_START);
+  if (((visible_line_index / CHECKER_BLOCK_HEIGHT_LINES) & 1U) == 0U)
+  {
+    return visible_line_buffer_phase0;
+  }
+
+  return visible_line_buffer_phase1;
+}
+
+static void VGA_StartVideo(void)
+{
+  current_line = (uint16_t)(V_TOTAL_LINES - 1U);
+  VGA_VSYNC_PORT->BSRR = (uint32_t)VGA_VSYNC_PIN << 16U;
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+  __HAL_TIM_SET_COUNTER(&htim2, 0U);
+  __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, HSYNC_PULSE_TICKS);
+
+  active_line_src = blank_line_buffer;
+  if (HAL_DMA_Start(&hdma_tim4_up, (uint32_t)&tim2_cnt_reset_word, (uint32_t)&TIM2->CNT, 1U) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  if (HAL_DMA_Start(&hdma_tim2_up, (uint32_t)active_line_src, (uint32_t)&GPIOA->BSRR, H_PIXEL) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  __HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_UPDATE);
+  __HAL_TIM_ENABLE_DMA(&htim4, TIM_DMA_UPDATE);
+
+  if (HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  if (HAL_TIM_Base_Start(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  __HAL_TIM_CLEAR_IT(&htim4, TIM_IT_UPDATE);
+  __HAL_TIM_ENABLE_IT(&htim4, TIM_IT_UPDATE);
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim->Instance == TIM4)
+  if (htim->Instance != TIM4)
   {
-    VGA_OnLineInterrupt();
+    return;
+  }
+
+  current_line++;
+  if (current_line >= V_TOTAL_LINES)
+  {
+    current_line = 0U;
+  }
+
+  if (current_line == 0U)
+  {
+    VGA_VSYNC_PORT->BSRR = VGA_VSYNC_PIN;
+  }
+  else if (current_line == V_SYNC_LINES)
+  {
+    VGA_VSYNC_PORT->BSRR = (uint32_t)VGA_VSYNC_PIN << 16U;
+  }
+
+  if ((current_line >= V_VISIBLE_LINE_START) && (current_line < V_VISIBLE_LINE_END))
+  {
+    const uint32_t *next_line_src;
+
+    next_line_src = VGA_GetVisibleLineBuffer(current_line);
+    if (active_line_src != next_line_src)
+    {
+      active_line_src = next_line_src;
+      hdma_tim2_up.Instance->CMAR = (uint32_t)active_line_src;
+    }
+  }
+  else if (active_line_src != blank_line_buffer)
+  {
+    active_line_src = blank_line_buffer;
+    hdma_tim2_up.Instance->CMAR = (uint32_t)active_line_src;
   }
 }
 
