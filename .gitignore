@@ -6,4 +6,8 @@ reference_repo/
 
 # Build artifacts and local archives
 try/Debug/
+vga_empty/Debug/
+vga_empty/Release/
+vga_empty/.metadata/
+vga_empty/.settings/
 *.zip
