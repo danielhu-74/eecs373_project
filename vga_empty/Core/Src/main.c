@@ -87,7 +87,7 @@ static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line);
 #define V_VISIBLE_LINE_START (V_SYNC_LINES + V_BACKPORCH_LINES)
 #define V_VISIBLE_LINE_END   (V_VISIBLE_LINE_START + V_VISIBLE_LINES)
 
-#define VGA_USE_HSE_BYPASS_CLOCK 1U /* Set to 1 only after routing the Nucleo HSE input to ST-LINK MCO. */
+#define VGA_USE_HSE_BYPASS_CLOCK 0U /* Set to 1 only after routing the Nucleo HSE input to ST-LINK MCO. */
 #define VGA_TEST_PATTERN_SINGLE_EDGE 1U
 #define CHECKER_BLOCK_WIDTH_SAMPLES 4U
 #define CHECKER_BLOCK_HEIGHT_LINES 32U
