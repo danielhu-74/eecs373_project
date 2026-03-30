@@ -61,7 +61,7 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 static void VGA_InitTestPatternBuffers(void);
 static void VGA_StartVideo(void);
-static const uint8_t *VGA_GetVisibleLineBuffer(uint16_t line);
+static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line);
 
 /* USER CODE END PFP */
 
@@ -95,10 +95,20 @@ static const uint8_t *VGA_GetVisibleLineBuffer(uint16_t line);
 #define TIM2_LINE_SYNC_TRIGGER TIM_TS_ITR3
 
 volatile uint16_t current_line = 0;
-static uint8_t blank_line_buffer[H_PIXEL];
-static uint8_t visible_line_buffer_phase0[H_PIXEL];
-static uint8_t visible_line_buffer_phase1[H_PIXEL];
-static const uint8_t *active_line_src = 0;
+static uint32_t blank_line_buffer[H_PIXEL];
+static uint32_t visible_line_buffer_phase0[H_PIXEL];
+static uint32_t visible_line_buffer_phase1[H_PIXEL];
+static const uint32_t *active_line_src = 0;
+
+static uint32_t VGA_ColorToBsrr(uint8_t color)
+{
+  uint32_t set_mask;
+  uint32_t reset_mask;
+
+  set_mask = (uint32_t)(color & (COLOR_RED | COLOR_GREEN));
+  reset_mask = (uint32_t)((COLOR_RED | COLOR_GREEN) & (uint8_t)(~color));
+  return set_mask | (reset_mask << 16U);
+}
 /* USER CODE END 0 */
 
 /**
@@ -602,9 +612,9 @@ static void VGA_InitTestPatternBuffers(void)
 
   for (h = 0; h < H_PIXEL; ++h)
   {
-    blank_line_buffer[h] = COLOR_BLACK;
-    visible_line_buffer_phase0[h] = COLOR_BLACK;
-    visible_line_buffer_phase1[h] = COLOR_BLACK;
+    blank_line_buffer[h] = VGA_ColorToBsrr(COLOR_BLACK);
+    visible_line_buffer_phase0[h] = VGA_ColorToBsrr(COLOR_BLACK);
+    visible_line_buffer_phase1[h] = VGA_ColorToBsrr(COLOR_BLACK);
   }
 
   for (h = visible_start; h < visible_end; ++h)
@@ -614,19 +624,19 @@ static void VGA_InitTestPatternBuffers(void)
     uint8_t base_color;
 
     base_color = (x < (H_VISIBLE / 2U)) ? COLOR_RED : COLOR_GREEN;
-    visible_line_buffer_phase0[h] = base_color;
-    visible_line_buffer_phase1[h] = base_color;
+    visible_line_buffer_phase0[h] = VGA_ColorToBsrr(base_color);
+    visible_line_buffer_phase1[h] = VGA_ColorToBsrr(base_color);
 #else
     uint8_t base_color;
 
     base_color = (((x / CHECKER_BLOCK_WIDTH_SAMPLES) & 1U) == 0U) ? COLOR_RED : COLOR_GREEN;
-    visible_line_buffer_phase0[h] = base_color;
-    visible_line_buffer_phase1[h] = (base_color == COLOR_RED) ? COLOR_GREEN : COLOR_RED;
+    visible_line_buffer_phase0[h] = VGA_ColorToBsrr(base_color);
+    visible_line_buffer_phase1[h] = VGA_ColorToBsrr((base_color == COLOR_RED) ? COLOR_GREEN : COLOR_RED);
 #endif
   }
 }
 
-static const uint8_t *VGA_GetVisibleLineBuffer(uint16_t line)
+static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line)
 {
   uint16_t visible_line_index;
 
@@ -648,7 +658,7 @@ static void VGA_StartVideo(void)
   __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_4, HSYNC_PULSE_TICKS);
 
   active_line_src = blank_line_buffer;
-  if (HAL_DMA_Start(&hdma_tim2_up, (uint32_t)active_line_src, (uint32_t)&GPIOA->ODR, H_PIXEL) != HAL_OK)
+  if (HAL_DMA_Start(&hdma_tim2_up, (uint32_t)active_line_src, (uint32_t)&GPIOA->BSRR, H_PIXEL) != HAL_OK)
   {
     Error_Handler();
   }
@@ -693,7 +703,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
   if ((current_line >= V_VISIBLE_LINE_START) && (current_line < V_VISIBLE_LINE_END))
   {
-    const uint8_t *next_line_src;
+    const uint32_t *next_line_src;
 
     next_line_src = VGA_GetVisibleLineBuffer(current_line);
     if (active_line_src != next_line_src)
