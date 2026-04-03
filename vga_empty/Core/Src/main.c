@@ -88,9 +88,9 @@ static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line);
 
 #define VGA_USE_HSE_BYPASS_CLOCK 0U /* Set to 1 only after routing the Nucleo HSE input to ST-LINK MCO. */
 #define VGA_TEST_PATTERN_SINGLE_EDGE 1U
-#define CHECKER_BLOCK_WIDTH_SAMPLES 4U
+#define VGA_STRIPE_WIDTH_SAMPLES 16U
 #define CHECKER_BLOCK_HEIGHT_LINES 32U
-#define H_PHASE_OFFSET_SAMPLES (-2)
+#define H_PHASE_OFFSET_SAMPLES 0
 /*
  * TIM4 stays as the line master and TIM2 becomes the pixel slave.
  * If the board stays black, try TIM_TS_ITR0/1/2 here until TIM2 locks to TIM4.
@@ -630,7 +630,7 @@ static void VGA_InitTestPatternBuffers(void)
 #else
     uint8_t base_color;
 
-    base_color = (((x / CHECKER_BLOCK_WIDTH_SAMPLES) & 1U) == 0U) ? COLOR_RED : COLOR_GREEN;
+    base_color = (((x / VGA_STRIPE_WIDTH_SAMPLES) & 1U) == 0U) ? COLOR_RED : COLOR_GREEN;
     visible_line_buffer_phase0[h] = VGA_ColorToBsrr(base_color);
     visible_line_buffer_phase1[h] = VGA_ColorToBsrr((base_color == COLOR_RED) ? COLOR_GREEN : COLOR_RED);
 #endif
