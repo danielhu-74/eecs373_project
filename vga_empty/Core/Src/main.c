@@ -69,6 +69,7 @@ static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line);
 #define COLOR_BLACK ((uint8_t)0x00U)
 #define COLOR_RED   ((uint8_t)GPIO_PIN_5)
 #define COLOR_GREEN ((uint8_t)GPIO_PIN_7)
+#define COLOR_YELLOW ((uint8_t)(GPIO_PIN_5 | GPIO_PIN_7))
 
 #define H_SYNC       (128U / 8U)
 #define H_BACKPORCH  (88U / 8U)
@@ -87,7 +88,8 @@ static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line);
 #define V_VISIBLE_LINE_END   (V_VISIBLE_LINE_START + V_VISIBLE_LINES)
 
 #define VGA_USE_HSE_BYPASS_CLOCK 0U /* Set to 1 only after routing the Nucleo HSE input to ST-LINK MCO. */
-#define VGA_TEST_PATTERN_SINGLE_EDGE 1U
+#define VGA_TEST_PATTERN_SINGLE_EDGE 0U
+#define VGA_TEST_PATTERN_MULTI_COLOR 1U
 #define VGA_STRIPE_WIDTH_SAMPLES 16U
 #define CHECKER_BLOCK_HEIGHT_LINES 32U
 #define H_PHASE_OFFSET_SAMPLES 0
@@ -625,6 +627,29 @@ static void VGA_InitTestPatternBuffers(void)
     uint8_t base_color;
 
     base_color = (x < (H_VISIBLE / 2U)) ? COLOR_RED : COLOR_GREEN;
+    visible_line_buffer_phase0[h] = VGA_ColorToBsrr(base_color);
+    visible_line_buffer_phase1[h] = VGA_ColorToBsrr(base_color);
+#elif VGA_TEST_PATTERN_MULTI_COLOR
+    uint8_t base_color;
+    uint16_t segment = (uint16_t)((x * 4U) / H_VISIBLE);
+
+    if (segment == 0U)
+    {
+      base_color = COLOR_BLACK;
+    }
+    else if (segment == 1U)
+    {
+      base_color = COLOR_RED;
+    }
+    else if (segment == 2U)
+    {
+      base_color = COLOR_GREEN;
+    }
+    else
+    {
+      base_color = COLOR_YELLOW;
+    }
+
     visible_line_buffer_phase0[h] = VGA_ColorToBsrr(base_color);
     visible_line_buffer_phase1[h] = VGA_ColorToBsrr(base_color);
 #else
