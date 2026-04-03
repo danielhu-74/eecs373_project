@@ -90,10 +90,7 @@ static const uint32_t *VGA_GetVisibleLineBuffer(uint16_t line);
 
 #define VGA_USE_HSE_BYPASS_CLOCK 0U /* Set to 1 only after routing the Nucleo HSE input to ST-LINK MCO. */
 #define H_PHASE_OFFSET_SAMPLES 0
-/*
- * TIM4 stays as the line master and TIM2 becomes the pixel slave.
- * If the board stays black, try TIM_TS_ITR0/1/2 here until TIM2 locks to TIM4.
- */
+#define VGA_USE_TIM2_HARD_SYNC 0U
 #define TIM2_LINE_SYNC_TRIGGER TIM_TS_ITR3
 
 volatile uint16_t current_line = 0;
@@ -220,7 +217,9 @@ static void MX_TIM2_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+#if VGA_USE_TIM2_HARD_SYNC
   TIM_SlaveConfigTypeDef sSlaveConfig = {0};
+#endif
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
@@ -240,10 +239,11 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+#if VGA_USE_TIM2_HARD_SYNC
   /*
-   * Hardware line-start alignment:
-   * TIM4 update/TRGO resets TIM2 directly, so pixel sample 0 starts at a fixed
-   * phase every scanline without DMA/bus arbitration jitter.
+   * Optional hardware line-start alignment:
+   * if the chosen ITR mapping is wrong on this board, TIM2 can fail to produce
+   * visible output. Keep it switchable for bring-up.
    */
   sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
   sSlaveConfig.InputTrigger = TIM2_LINE_SYNC_TRIGGER;
@@ -251,6 +251,7 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+#endif
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
@@ -583,8 +584,11 @@ static void VGA_InitTestPatternBuffers(void)
   VgaGfx_Clear(COLOR_BLACK);
 
   VgaGfx_DrawRect(2, 2, (int16_t)(H_VISIBLE - 4), (int16_t)(V_VISIBLE_LINES - 4), COLOR_GREEN);
-  VgaGfx_DrawVLine((int16_t)(H_VISIBLE / 2), 80, (int16_t)(V_VISIBLE_LINES - 80), COLOR_GREEN);
-  VgaGfx_DrawHLine(15, (int16_t)(H_VISIBLE - 16), (int16_t)(V_VISIBLE_LINES - 60), COLOR_RED);
+  VgaGfx_FillRect(8, 60, 18, 140, COLOR_RED);
+  VgaGfx_FillRect((int16_t)(H_VISIBLE - 26), 60, 18, 140, COLOR_GREEN);
+  VgaGfx_FillRect(20, (int16_t)(V_VISIBLE_LINES - 110), 60, 24, COLOR_YELLOW);
+  VgaGfx_DrawLine(10, 240, (int16_t)(H_VISIBLE - 11), 320, COLOR_RED);
+  VgaGfx_DrawLine(10, 320, (int16_t)(H_VISIBLE - 11), 240, COLOR_GREEN);
   VgaGfx_DrawSimpleEmoji((int16_t)(H_VISIBLE / 2), (int16_t)(V_VISIBLE_LINES / 2), 18);
 }
 
