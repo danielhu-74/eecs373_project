@@ -25,8 +25,6 @@
 /* USER CODE END Includes */
 extern DMA_HandleTypeDef hdma_tim2_up;
 
-extern DMA_HandleTypeDef hdma_tim4_up;
-
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 
@@ -182,24 +180,6 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
     GPIO_InitStruct.Alternate = GPIO_AF2_TIM4;
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-    /* TIM4 DMA Init */
-    /* TIM4_UP Init */
-    hdma_tim4_up.Instance = DMA1_Channel1;
-    hdma_tim4_up.Init.Request = DMA_REQUEST_TIM4_UP;
-    hdma_tim4_up.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_tim4_up.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_tim4_up.Init.MemInc = DMA_MINC_DISABLE;
-    hdma_tim4_up.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    hdma_tim4_up.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
-    hdma_tim4_up.Init.Mode = DMA_CIRCULAR;
-    hdma_tim4_up.Init.Priority = DMA_PRIORITY_VERY_HIGH;
-    if (HAL_DMA_Init(&hdma_tim4_up) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
-    __HAL_LINKDMA(htim_pwm,hdma[TIM_DMA_ID_UPDATE],hdma_tim4_up);
-
     /* TIM4 interrupt Init */
     HAL_NVIC_SetPriority(TIM4_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(TIM4_IRQn);
@@ -296,9 +276,6 @@ void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* htim_pwm)
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_9);
 
     HAL_GPIO_DeInit(GPIOE, GPIO_PIN_0);
-
-    /* TIM4 DMA DeInit */
-    HAL_DMA_DeInit(htim_pwm->hdma[TIM_DMA_ID_UPDATE]);
 
     /* TIM4 interrupt DeInit */
     HAL_NVIC_DisableIRQ(TIM4_IRQn);
