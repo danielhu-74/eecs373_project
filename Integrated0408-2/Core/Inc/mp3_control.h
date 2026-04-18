@@ -7,6 +7,7 @@
 void Play_BGM(uint8_t folder, uint8_t file);
 void Play_SFX(uint8_t folder, uint8_t file);
 void Manual_MP3_INT_Init(void);
+void MP3_ProcessPlaybackState(void);
 
 // 如果其他文件需要判断播放状态，可以声明这些变量为全局可见
 extern volatile uint8_t mp3_finished_flag;

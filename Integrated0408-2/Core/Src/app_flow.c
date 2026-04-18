@@ -28,7 +28,6 @@ void AppFlow_Init(AppContext *app)
 
     app->stage = APP_STAGE_START_PAGE;
     app->stage_changed = 1U;
-    StartPage_Enter(&app->start_page);
 }
 
 void AppFlow_GoToStartPage(AppContext *app)
@@ -37,7 +36,6 @@ void AppFlow_GoToStartPage(AppContext *app)
         return;
     }
 
-    StartPage_Enter(&app->start_page);
     app_flow_mark_stage(app, APP_STAGE_START_PAGE);
 }
 
@@ -47,17 +45,15 @@ void AppFlow_GoToPlayMode(AppContext *app)
         return;
     }
 
-    PlayMode_Enter(&app->play_mode);
     app_flow_mark_stage(app, APP_STAGE_PLAY_MODE);
 }
 
-void AppFlow_GoToFinalStage(AppContext *app, PlayerSide winner)
+void AppFlow_GoToFinalStage(AppContext *app)
 {
     if (app == NULL) {
         return;
     }
 
-    FinalStage_Enter(&app->final_stage, winner);
     app_flow_mark_stage(app, APP_STAGE_FINAL_STAGE);
 }
 

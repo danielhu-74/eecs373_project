@@ -17,11 +17,12 @@ typedef enum
 
 typedef struct
 {
-    uint8_t reserved;
+    uint8_t active;
+    uint32_t frame_counter;
 } PlayModeContext;
 
 void PlayMode_Init(PlayModeContext *ctx);
-void PlayMode_Enter(PlayModeContext *ctx);
+void PlayMode_Enter(PlayModeContext *ctx, GameContext *game);
 PlayModeEvent PlayMode_Process(PlayModeContext *ctx, GameContext *game);
 
 #ifdef __cplusplus

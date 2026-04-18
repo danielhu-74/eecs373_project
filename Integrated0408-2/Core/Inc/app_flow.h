@@ -30,7 +30,7 @@ typedef struct
 void AppFlow_Init(AppContext *app);
 void AppFlow_GoToStartPage(AppContext *app);
 void AppFlow_GoToPlayMode(AppContext *app);
-void AppFlow_GoToFinalStage(AppContext *app, PlayerSide winner);
+void AppFlow_GoToFinalStage(AppContext *app);
 AppStage AppFlow_GetStage(const AppContext *app);
 uint8_t AppFlow_HasStageChanged(const AppContext *app);
 void AppFlow_ClearStageChanged(AppContext *app);

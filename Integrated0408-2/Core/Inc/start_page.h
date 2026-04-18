@@ -12,24 +12,19 @@ extern "C" {
 typedef enum
 {
     START_PAGE_EVENT_NONE = 0,
-    START_PAGE_EVENT_BOTH_READY = 1
+    START_PAGE_EVENT_START_REQUESTED = 1
 } StartPageEvent;
 
 typedef struct
 {
-    uint8_t p1_ready;
-    uint8_t p2_ready;
-    uint8_t sparkle_enabled;
+    uint8_t active;
+    uint8_t touch_latched;
+    uint32_t last_poll_tick;
 } StartPageContext;
 
 void StartPage_Init(StartPageContext *ctx);
 void StartPage_Enter(StartPageContext *ctx);
 StartPageEvent StartPage_Process(StartPageContext *ctx);
-void StartPage_HandleTap(StartPageContext *ctx, PlayerSide side);
-void StartPage_SetPlayerReady(StartPageContext *ctx, PlayerSide side, uint8_t ready);
-uint8_t StartPage_IsPlayerReady(const StartPageContext *ctx, PlayerSide side);
-uint8_t StartPage_AreBothPlayersReady(const StartPageContext *ctx);
-void StartPage_SetSparkleEnabled(StartPageContext *ctx, uint8_t enabled);
 
 #ifdef __cplusplus
 }

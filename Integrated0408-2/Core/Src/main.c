@@ -29,16 +29,9 @@
 #include <stdint.h>
 
 
-#include "game_types.h"
-#include "collision.h"
-#include "game_init.h"
-#include "game_update.h"
-#include "paddle_shuttle.h"
-#include "scoring.h"
-#include "spi.h"
+#include "game_app.h"
+#include "mp3_control.h"
 #include "wii_nunchuk.h"
-#include "ddr_pad.h"
-#include "lcd_touch_demo.h"
 
 
 /* USER CODE END Includes */
@@ -84,13 +77,6 @@ SPI_HandleTypeDef hspi1;
 /* USER CODE BEGIN PV */
 uint8_t nunchuk_data1[6]; // 存放读回来的 6 个字节
 uint8_t nunchuk_data2[6]; // 存放读回来的 6 个字节
-// MP3 状态控制
-volatile uint8_t mp3_finished_flag = 0; // 播放结束标志（由中断修改）
-uint8_t is_playing_sfx = 0;             // 标志：0-正在播BGM，1-正在播音效
-
-// 记录当前 BGM，方便音效播完后切回来
-uint8_t current_bgm_folder = 2;
-uint8_t current_bgm_file = 1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,58 +93,6 @@ static void MX_I2C2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-// 1. 手动配置 PG1 为外部中断 (代替 IOC 操作)
-void Manual_MP3_INT_Init(void) {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    __HAL_RCC_GPIOG_CLK_ENABLE();      // 开启 GPIOG 时钟
-    __HAL_RCC_SYSCFG_CLK_ENABLE();     // 开启系统配置时钟（外部中断必需）
-
-    GPIO_InitStruct.Pin = GPIO_PIN_1;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING; // 上升沿触发（BUSY从低变高即播放停止）
-    GPIO_InitStruct.Pull = GPIO_PULLUP;         // 默认上拉
-    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-
-    // 开启中断线路 1 (对应 PG1)
-    HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-}
-
-// 2. 底层指令：直接给串口发播放命令
-void MP3_Send_Cmd(uint8_t folder, uint8_t file) {
-    uint8_t cmd[8] = {0x7E, 0xFF, 0x06, 0x0F, 0x00, folder, file, 0xEF};
-    HAL_UART_Transmit(&huart3, cmd, 8, 100);
-}
-
-
-
-// 3. 应用层：播放背景音乐 (会自动记录)
-void Play_BGM(uint8_t folder, uint8_t file) {
-    current_bgm_folder = folder;
-    current_bgm_file = file;
-    is_playing_sfx = 0;
-    MP3_Send_Cmd(folder, file);
-}
-
-// 4. 应用层：播放单次音效 (挥拍等)
-void Play_SFX(uint8_t folder, uint8_t file) {
-    is_playing_sfx = 1;
-    MP3_Send_Cmd(folder, file);
-}
-
-
-//void MP3_Play_Folder_File(uint8_t folder, uint8_t file)
-//{
-//    uint8_t cmd[8] = {0x7E, 0xFF, 0x06, 0x0F, 0x00, folder, file, 0xEF};
-//
-//    // 使用 USART3 发送这 8 个字节
-//    // 注意：如果你的串口不是 huart3，请把下面的 huart3 改成对应的名字 (如 huart4)
-//    HAL_UART_Transmit(&huart3, cmd, 8, HAL_MAX_DELAY);
-//}
-
-
-
-
 void DWT_Init(void) {
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CYCCNT = 0;
@@ -208,114 +142,16 @@ int main(void)
   MX_SPI1_Init();
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-  if (LCD_Touch_ColorDemo_Init() != HAL_OK) {
-      printf("Touch demo init failed\r\n");
-  }
+  GameAppContext app;
 
   DWT_Init();
   nunchuk_init();       // 初始化 P1 手柄
   Manual_MP3_INT_Init(); // 激活我们刚才手动写的 PG1 中断配置
 
+  GameApp_Init(&app);
 
-  // 用于保存上一个周期的 Z 轴数据，用来计算瞬间速度差
-//  static uint16_t last_acc_z = 712; // 初始值给个大概就行，运行一次后就会自动同步
-//
-//  static int cooldown_timer = 0;
-//
-//  // 差值阈值：这决定了你需要多“猛”的发力才能触发。
-//  // 因为差值过滤了重力，这个值通常可以设小一点，比如 40 ~ 80
-//  const int SWING_THRESHOLD = 60;
-//  const int COOLDOWN_CYCLES = 10;
-
-  GameContext ctx;
-  game_init(&ctx);
-
-  bool quit = false;
-
-  Play_BGM(2,1);
-//  MP3_Send_Cmd(1, 1);
-//  HAL_Delay(5000);
-  int i = 0;
-  /* Continuous keyboard state */
-  while (!quit) {
-	  /* ── Event pump ── */
-	  //SDL_Event ev;
-	  /* Reset single-tick swing flags before polling */
-//	  MP3_Send_Cmd(2, 1);
-//	  HAL_Delay(5000);
-
-
-
-	  /* ── Fixed timestep tick (mirrors TIM3 16 ms interrupt) ── */
-	  //uint64_t now = SDL_GetTicks();
-//	  if (now - last_tick >= TICK_MS) {
-//		  last_tick = now;
-
-		  //printf("i : %d\n", i);
-	  if (mp3_finished_flag) {
-		   mp3_finished_flag = 0; // 清除旗帜
-
-		   if (is_playing_sfx) {
-			   // 说明刚才播完的是音效，现在该切回 BGM 了
-			   is_playing_sfx = 0;
-			   MP3_Send_Cmd(current_bgm_folder, current_bgm_file);
-		   } else {
-			   // 说明刚才播完的是 BGM，现在该循环播放了
-			   MP3_Send_Cmd(current_bgm_folder, current_bgm_file);
-		   }
-	   }
-	  if (i % 48 == 0){
-		  ctx.p1.swing = false;
-		  ctx.p2.swing = false;
-	  }
-
-      (void)LCD_Touch_ColorDemo_Process();
-
-
-		  process_nunchuk_p1(&ctx.p1);
-	  process_nunchuk_p2(&ctx.p2);
-
-
-	  process_Pad(&ctx.p1);
-	  process_Pad_P2(&ctx.p2);
-
-	  game_update(&ctx);
-
-	  i++;
-
-	  PlayerData p1_data = {.x = (uint16_t)ctx.p1.x, .y= (uint16_t)ctx.p1.y, .swing = ctx.p1.swing};
-	  PlayerData p2_data = {.x = (uint16_t)ctx.p2.x, .y = (uint16_t)ctx.p2.y, .swing = ctx.p2.swing};
-	  ShuttlecockData shuttle_data = {.x = (uint16_t)ctx.shuttle.x, .y = (uint16_t)ctx.shuttle.y};
-
-//	  if (j % 30 == 0){
-//		  ctx.p1.x = 40;
-//	  }
-//	  else{
-//		  ctx.p1.x += 5;
-//	  }
-//	  j++;
-
-      SPI_SendGameState(p1_data, p2_data, shuttle_data);
-
-//	  HAL_StatusTypeDef spi_status;
-//	  uint8_t txData[4] = {0x44, 0xBB, 0xCC, 0xDD};
-//	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
-//	  spi_status = HAL_SPI_Transmit(&hspi1, txData, 4, HAL_MAX_DELAY);
-//	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
-//		if (spi_status == HAL_OK) {
-//
-//				printf("SPI Tx OK!\r\n");
-//			}
-//			else {
-//				printf("SPI Tx FAILED! Error code: %d\r\n", spi_status);
-//
-//
-//
-//
-//
-//	}
-	  /* ── Render ── */
-	  //render_game(g_renderer, &ctx, mouse_x, mouse_y);
+  while (1) {
+      GameApp_Process(&app);
   }
   /* USER CODE END 2 */
 
