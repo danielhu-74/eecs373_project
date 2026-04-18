@@ -63,7 +63,7 @@ void FinalStage_Enter(FinalStageContext *ctx, PlayerSide winner, uint8_t p1_scor
 
     (void)snprintf(winner_text,
                    sizeof(winner_text),
-                   (winner == SIDE_LEFT) ? "P1 WINS" : "P2 WINS");
+                   (winner == SIDE_LEFT) ? "PLAYER 1 WINS" : "PLAYER 2 WINS");
     (void)snprintf(score_text,
                    sizeof(score_text),
                    "SCORE %u-%u",

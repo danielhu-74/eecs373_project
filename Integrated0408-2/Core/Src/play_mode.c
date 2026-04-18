@@ -1,14 +1,90 @@
 #include "play_mode.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include "ddr_pad.h"
+#include "lcd_minimal.h"
 #include "lcd_ui.h"
 #include "mp3_control.h"
 #include "spi.h"
 #include "wii_nunchuk.h"
 #include "game_init.h"
 #include "game_update.h"
+
+#define PLAY_LABEL_SCALE  3U
+#define PLAY_SCORE_SCALE  6U
+
+static HAL_StatusTypeDef play_mode_render_scoreboard(PlayModeContext *ctx, const GameContext *game)
+{
+    char score_text[16];
+    HAL_StatusTypeDef status;
+
+    if (ctx == NULL || game == NULL) {
+        return HAL_ERROR;
+    }
+
+    status = LCD_UI_Clear(0x00U, 0x00U, 0x00U);
+    if (status != HAL_OK) {
+        return status;
+    }
+
+    status = LCD_UI_DrawTextCentered((uint16_t)(LCD_MINIMAL_WIDTH / 4U),
+                                     40U,
+                                     "PLAYER 1",
+                                     PLAY_LABEL_SCALE,
+                                     0xFFU,
+                                     0xFFU,
+                                     0xFFU);
+    if (status != HAL_OK) {
+        return status;
+    }
+
+    status = LCD_UI_DrawTextCentered((uint16_t)((LCD_MINIMAL_WIDTH * 3U) / 4U),
+                                     40U,
+                                     "PLAYER 2",
+                                     PLAY_LABEL_SCALE,
+                                     0xFFU,
+                                     0xFFU,
+                                     0xFFU);
+    if (status != HAL_OK) {
+        return status;
+    }
+
+    status = LCD_Minimal_FillRect(48U,
+                                  96U,
+                                  (uint16_t)(LCD_MINIMAL_WIDTH - 96U),
+                                  2U,
+                                  0x30U,
+                                  0x30U,
+                                  0x30U);
+    if (status != HAL_OK) {
+        return status;
+    }
+
+    (void)snprintf(score_text,
+                   sizeof(score_text),
+                   "%u:%u",
+                   (unsigned int)game->p1.score,
+                   (unsigned int)game->p2.score);
+
+    status = LCD_UI_DrawTextCentered((uint16_t)(LCD_MINIMAL_WIDTH / 2U),
+                                     132U,
+                                     score_text,
+                                     PLAY_SCORE_SCALE,
+                                     0xFFU,
+                                     0xFFU,
+                                     0xFFU);
+    if (status != HAL_OK) {
+        return status;
+    }
+
+    ctx->last_p1_score = game->p1.score;
+    ctx->last_p2_score = game->p2.score;
+    ctx->scoreboard_drawn = 1U;
+
+    return HAL_OK;
+}
 
 void PlayMode_Init(PlayModeContext *ctx)
 {
@@ -17,6 +93,9 @@ void PlayMode_Init(PlayModeContext *ctx)
     }
 
     ctx->active = 0U;
+    ctx->last_p1_score = 0U;
+    ctx->last_p2_score = 0U;
+    ctx->scoreboard_drawn = 0U;
     ctx->frame_counter = 0U;
 }
 
@@ -30,7 +109,7 @@ void PlayMode_Enter(PlayModeContext *ctx, GameContext *game)
     game_init(game);
     ctx->active = 1U;
 
-    (void)LCD_UI_Clear(0x00U, 0x00U, 0x00U);
+    (void)play_mode_render_scoreboard(ctx, game);
     Play_BGM(2U, 1U);
 }
 
@@ -61,6 +140,12 @@ PlayModeEvent PlayMode_Process(PlayModeContext *ctx, GameContext *game)
 
     game_update(game);
     ++ctx->frame_counter;
+
+    if (ctx->scoreboard_drawn == 0U ||
+        ctx->last_p1_score != game->p1.score ||
+        ctx->last_p2_score != game->p2.score) {
+        (void)play_mode_render_scoreboard(ctx, game);
+    }
 
     p1_data.x = (uint16_t)game->p1.x;
     p1_data.y = (uint16_t)game->p1.y;

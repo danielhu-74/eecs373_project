@@ -15,6 +15,14 @@ static const uint8_t font_space[7] = {
     0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U
 };
 
+static const uint8_t font_bang[7] = {
+    0x04U, 0x04U, 0x04U, 0x04U, 0x04U, 0x00U, 0x04U
+};
+
+static const uint8_t font_colon[7] = {
+    0x00U, 0x04U, 0x04U, 0x00U, 0x04U, 0x04U, 0x00U
+};
+
 static const uint8_t font_dash[7] = {
     0x00U, 0x00U, 0x00U, 0x1FU, 0x00U, 0x00U, 0x00U
 };
@@ -56,6 +64,9 @@ static const uint8_t font_A[7] = {
 static const uint8_t font_C[7] = {
     0x0FU, 0x10U, 0x10U, 0x10U, 0x10U, 0x10U, 0x0FU
 };
+static const uint8_t font_D[7] = {
+    0x1EU, 0x11U, 0x11U, 0x11U, 0x11U, 0x11U, 0x1EU
+};
 static const uint8_t font_E[7] = {
     0x1FU, 0x10U, 0x10U, 0x1EU, 0x10U, 0x10U, 0x1FU
 };
@@ -64,6 +75,9 @@ static const uint8_t font_G[7] = {
 };
 static const uint8_t font_I[7] = {
     0x0EU, 0x04U, 0x04U, 0x04U, 0x04U, 0x04U, 0x0EU
+};
+static const uint8_t font_L[7] = {
+    0x10U, 0x10U, 0x10U, 0x10U, 0x10U, 0x10U, 0x1FU
 };
 static const uint8_t font_M[7] = {
     0x11U, 0x1BU, 0x15U, 0x15U, 0x11U, 0x11U, 0x11U
@@ -77,6 +91,9 @@ static const uint8_t font_O[7] = {
 static const uint8_t font_P[7] = {
     0x1EU, 0x11U, 0x11U, 0x1EU, 0x10U, 0x10U, 0x10U
 };
+static const uint8_t font_Q[7] = {
+    0x0EU, 0x11U, 0x11U, 0x11U, 0x15U, 0x12U, 0x0DU
+};
 static const uint8_t font_R[7] = {
     0x1EU, 0x11U, 0x11U, 0x1EU, 0x14U, 0x12U, 0x11U
 };
@@ -86,16 +103,26 @@ static const uint8_t font_S[7] = {
 static const uint8_t font_T[7] = {
     0x1FU, 0x04U, 0x04U, 0x04U, 0x04U, 0x04U, 0x04U
 };
+static const uint8_t font_U[7] = {
+    0x11U, 0x11U, 0x11U, 0x11U, 0x11U, 0x11U, 0x0EU
+};
 static const uint8_t font_V[7] = {
     0x11U, 0x11U, 0x11U, 0x11U, 0x11U, 0x0AU, 0x04U
 };
 static const uint8_t font_W[7] = {
     0x11U, 0x11U, 0x11U, 0x15U, 0x15U, 0x1BU, 0x11U
 };
+static const uint8_t font_Y[7] = {
+    0x11U, 0x11U, 0x0AU, 0x04U, 0x04U, 0x04U, 0x04U
+};
 
 static const uint8_t *lcd_ui_get_glyph(char c)
 {
     switch (c) {
+    case '!':
+        return font_bang;
+    case ':':
+        return font_colon;
     case '-':
         return font_dash;
     case '0':
@@ -122,12 +149,16 @@ static const uint8_t *lcd_ui_get_glyph(char c)
         return font_A;
     case 'C':
         return font_C;
+    case 'D':
+        return font_D;
     case 'E':
         return font_E;
     case 'G':
         return font_G;
     case 'I':
         return font_I;
+    case 'L':
+        return font_L;
     case 'M':
         return font_M;
     case 'N':
@@ -136,16 +167,22 @@ static const uint8_t *lcd_ui_get_glyph(char c)
         return font_O;
     case 'P':
         return font_P;
+    case 'Q':
+        return font_Q;
     case 'R':
         return font_R;
     case 'S':
         return font_S;
     case 'T':
         return font_T;
+    case 'U':
+        return font_U;
     case 'V':
         return font_V;
     case 'W':
         return font_W;
+    case 'Y':
+        return font_Y;
     case ' ':
     default:
         return font_space;

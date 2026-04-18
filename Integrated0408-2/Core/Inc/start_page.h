@@ -18,6 +18,8 @@ typedef enum
 typedef struct
 {
     uint8_t active;
+    uint8_t p1_ready;
+    uint8_t p2_ready;
     uint8_t touch_latched;
     uint32_t last_poll_tick;
 } StartPageContext;

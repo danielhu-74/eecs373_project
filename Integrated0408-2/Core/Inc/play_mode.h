@@ -18,6 +18,9 @@ typedef enum
 typedef struct
 {
     uint8_t active;
+    uint8_t last_p1_score;
+    uint8_t last_p2_score;
+    uint8_t scoreboard_drawn;
     uint32_t frame_counter;
 } PlayModeContext;
 
