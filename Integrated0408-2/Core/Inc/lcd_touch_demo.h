@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+HAL_StatusTypeDef LCD_Touch_ColorDemo_Init(void);
+HAL_StatusTypeDef LCD_Touch_ColorDemo_Process(void);
 HAL_StatusTypeDef LCD_Touch_ColorDemo_Run(void);
 
 #ifdef __cplusplus

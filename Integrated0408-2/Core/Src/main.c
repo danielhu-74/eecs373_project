@@ -38,7 +38,7 @@
 #include "spi.h"
 #include "wii_nunchuk.h"
 #include "ddr_pad.h"
-#include "lcd_minimal.h"
+#include "lcd_touch_demo.h"
 
 
 /* USER CODE END Includes */
@@ -208,12 +208,8 @@ int main(void)
   MX_SPI1_Init();
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-  if (LCD_Minimal_Init() == HAL_OK) {
-      if (LCD_Minimal_ShowTestPattern() != HAL_OK) {
-          printf("LCD test pattern failed\r\n");
-      }
-  } else {
-      printf("LCD init failed\r\n");
+  if (LCD_Touch_ColorDemo_Init() != HAL_OK) {
+      printf("Touch demo init failed\r\n");
   }
 
   DWT_Init();
@@ -273,8 +269,10 @@ int main(void)
 		  ctx.p2.swing = false;
 	  }
 
+      (void)LCD_Touch_ColorDemo_Process();
 
-	  process_nunchuk_p1(&ctx.p1);
+
+		  process_nunchuk_p1(&ctx.p1);
 	  process_nunchuk_p2(&ctx.p2);
 
 

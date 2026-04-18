@@ -56,6 +56,14 @@ typedef struct
     uint8_t blue;
 } MenuButton;
 
+typedef struct
+{
+    MenuButton buttons[2];
+    uint8_t initialized;
+    uint8_t last_active_button;
+    uint32_t last_poll_tick;
+} LCD_TouchDemoContext;
+
 static const uint8_t font_space[7] = {
     0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U
 };
@@ -90,6 +98,8 @@ static const uint8_t font_T[7] = {
 static const uint8_t font_U[7] = {
     0x11U, 0x11U, 0x11U, 0x11U, 0x11U, 0x11U, 0x0EU
 };
+
+static LCD_TouchDemoContext g_lcd_touch_demo = {0};
 
 static const uint8_t *lcd_touch_demo_get_glyph(char c)
 {
@@ -273,7 +283,6 @@ static uint8_t lcd_touch_demo_hit_test(const MenuButton *button,
 
 static HAL_StatusTypeDef lcd_touch_demo_draw_menu(uint8_t active_button)
 {
-    MenuButton buttons[2];
     uint16_t panel_x;
     uint16_t panel_y;
     uint16_t panel_width;
@@ -284,24 +293,6 @@ static HAL_StatusTypeDef lcd_touch_demo_draw_menu(uint8_t active_button)
     panel_height = 250U;
     panel_x = (uint16_t)((LCD_MINIMAL_WIDTH > panel_width) ? ((LCD_MINIMAL_WIDTH - panel_width) / 2U) : 0U);
     panel_y = 35U;
-
-    buttons[0].x = (uint16_t)((LCD_MINIMAL_WIDTH - UI_BUTTON_WIDTH) / 2U);
-    buttons[0].y = 135U;
-    buttons[0].width = UI_BUTTON_WIDTH;
-    buttons[0].height = UI_BUTTON_HEIGHT;
-    buttons[0].label = "START";
-    buttons[0].red = UI_BUTTON1_R;
-    buttons[0].green = UI_BUTTON1_G;
-    buttons[0].blue = UI_BUTTON1_B;
-
-    buttons[1].x = buttons[0].x;
-    buttons[1].y = (uint16_t)(buttons[0].y + UI_BUTTON_HEIGHT + UI_BUTTON_GAP);
-    buttons[1].width = UI_BUTTON_WIDTH;
-    buttons[1].height = UI_BUTTON_HEIGHT;
-    buttons[1].label = "TOOLS";
-    buttons[1].red = UI_BUTTON2_R;
-    buttons[1].green = UI_BUTTON2_G;
-    buttons[1].blue = UI_BUTTON2_B;
 
     if (lcd_touch_demo_fill(UI_BG_R, UI_BG_G, UI_BG_B) != HAL_OK) {
         return HAL_ERROR;
@@ -338,41 +329,41 @@ static HAL_StatusTypeDef lcd_touch_demo_draw_menu(uint8_t active_button)
         return HAL_ERROR;
     }
 
-    if (lcd_touch_demo_draw_button(&buttons[0], (uint8_t)(active_button == 1U)) != HAL_OK) {
+    if (lcd_touch_demo_draw_button(&g_lcd_touch_demo.buttons[0], (uint8_t)(active_button == 1U)) != HAL_OK) {
         return HAL_ERROR;
     }
 
-    if (lcd_touch_demo_draw_button(&buttons[1], (uint8_t)(active_button == 2U)) != HAL_OK) {
+    if (lcd_touch_demo_draw_button(&g_lcd_touch_demo.buttons[1], (uint8_t)(active_button == 2U)) != HAL_OK) {
         return HAL_ERROR;
     }
 
     return HAL_OK;
 }
 
-HAL_StatusTypeDef LCD_Touch_ColorDemo_Run(void)
+static void lcd_touch_demo_setup_buttons(void)
 {
-    Touch_XPT2046_State touch_state;
-    MenuButton buttons[2];
-    uint8_t active_button = 0U;
-    uint8_t last_active_button = 0xFFU;
+    g_lcd_touch_demo.buttons[0].x = (uint16_t)((LCD_MINIMAL_WIDTH - UI_BUTTON_WIDTH) / 2U);
+    g_lcd_touch_demo.buttons[0].y = 135U;
+    g_lcd_touch_demo.buttons[0].width = UI_BUTTON_WIDTH;
+    g_lcd_touch_demo.buttons[0].height = UI_BUTTON_HEIGHT;
+    g_lcd_touch_demo.buttons[0].label = "START";
+    g_lcd_touch_demo.buttons[0].red = UI_BUTTON1_R;
+    g_lcd_touch_demo.buttons[0].green = UI_BUTTON1_G;
+    g_lcd_touch_demo.buttons[0].blue = UI_BUTTON1_B;
 
-    buttons[0].x = (uint16_t)((LCD_MINIMAL_WIDTH - UI_BUTTON_WIDTH) / 2U);
-    buttons[0].y = 135U;
-    buttons[0].width = UI_BUTTON_WIDTH;
-    buttons[0].height = UI_BUTTON_HEIGHT;
-    buttons[0].label = "START";
-    buttons[0].red = UI_BUTTON1_R;
-    buttons[0].green = UI_BUTTON1_G;
-    buttons[0].blue = UI_BUTTON1_B;
+    g_lcd_touch_demo.buttons[1].x = g_lcd_touch_demo.buttons[0].x;
+    g_lcd_touch_demo.buttons[1].y = (uint16_t)(g_lcd_touch_demo.buttons[0].y + UI_BUTTON_HEIGHT + UI_BUTTON_GAP);
+    g_lcd_touch_demo.buttons[1].width = UI_BUTTON_WIDTH;
+    g_lcd_touch_demo.buttons[1].height = UI_BUTTON_HEIGHT;
+    g_lcd_touch_demo.buttons[1].label = "TOOLS";
+    g_lcd_touch_demo.buttons[1].red = UI_BUTTON2_R;
+    g_lcd_touch_demo.buttons[1].green = UI_BUTTON2_G;
+    g_lcd_touch_demo.buttons[1].blue = UI_BUTTON2_B;
+}
 
-    buttons[1].x = buttons[0].x;
-    buttons[1].y = (uint16_t)(buttons[0].y + UI_BUTTON_HEIGHT + UI_BUTTON_GAP);
-    buttons[1].width = UI_BUTTON_WIDTH;
-    buttons[1].height = UI_BUTTON_HEIGHT;
-    buttons[1].label = "TOOLS";
-    buttons[1].red = UI_BUTTON2_R;
-    buttons[1].green = UI_BUTTON2_G;
-    buttons[1].blue = UI_BUTTON2_B;
+HAL_StatusTypeDef LCD_Touch_ColorDemo_Init(void)
+{
+    lcd_touch_demo_setup_buttons();
 
     if (LCD_Minimal_Init() != HAL_OK) {
         return HAL_ERROR;
@@ -386,35 +377,66 @@ HAL_StatusTypeDef LCD_Touch_ColorDemo_Run(void)
         return HAL_ERROR;
     }
 
-    printf("Touch demo ready.\r\n");
+    g_lcd_touch_demo.initialized = 1U;
+    g_lcd_touch_demo.last_active_button = 0xFFU;
+    g_lcd_touch_demo.last_poll_tick = 0U;
 
-    while (1) {
-        if (Touch_XPT2046_ReadState(&touch_state) != HAL_OK) {
+    printf("Touch demo ready.\r\n");
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef LCD_Touch_ColorDemo_Process(void)
+{
+    Touch_XPT2046_State touch_state;
+    uint8_t active_button = 0U;
+    uint32_t now = HAL_GetTick();
+
+    if (g_lcd_touch_demo.initialized == 0U) {
+        return HAL_OK;
+    }
+
+    if ((now - g_lcd_touch_demo.last_poll_tick) < 20U) {
+        return HAL_OK;
+    }
+
+    g_lcd_touch_demo.last_poll_tick = now;
+
+    if (Touch_XPT2046_ReadState(&touch_state) != HAL_OK) {
+        return HAL_ERROR;
+    }
+
+    if (lcd_touch_demo_hit_test(&g_lcd_touch_demo.buttons[0], &touch_state) != 0U) {
+        active_button = 1U;
+    } else if (lcd_touch_demo_hit_test(&g_lcd_touch_demo.buttons[1], &touch_state) != 0U) {
+        active_button = 2U;
+    }
+
+    if (active_button != g_lcd_touch_demo.last_active_button) {
+        if (lcd_touch_demo_draw_menu(active_button) != HAL_OK) {
             return HAL_ERROR;
         }
 
-        active_button = 0U;
-
-        if (lcd_touch_demo_hit_test(&buttons[0], &touch_state) != 0U) {
-            active_button = 1U;
-        } else if (lcd_touch_demo_hit_test(&buttons[1], &touch_state) != 0U) {
-            active_button = 2U;
+        if (active_button == 1U) {
+            printf("START selected.\r\n");
+        } else if (active_button == 2U) {
+            printf("TOOLS selected.\r\n");
         }
 
-        if (active_button != last_active_button) {
-            if (lcd_touch_demo_draw_menu(active_button) != HAL_OK) {
-                return HAL_ERROR;
-            }
+        g_lcd_touch_demo.last_active_button = active_button;
+    }
 
-            if (active_button == 1U) {
-                printf("START selected.\r\n");
-            } else if (active_button == 2U) {
-                printf("TOOLS selected.\r\n");
-            }
+    return HAL_OK;
+}
 
-            last_active_button = active_button;
+HAL_StatusTypeDef LCD_Touch_ColorDemo_Run(void)
+{
+    if (LCD_Touch_ColorDemo_Init() != HAL_OK) {
+        return HAL_ERROR;
+    }
+
+    while (1) {
+        if (LCD_Touch_ColorDemo_Process() != HAL_OK) {
+            return HAL_ERROR;
         }
-
-        HAL_Delay(20U);
     }
 }
