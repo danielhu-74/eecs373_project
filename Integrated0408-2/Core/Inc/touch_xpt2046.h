@@ -23,9 +23,10 @@ extern "C" {
  * Calibration carried over from Integrated0408_trueold.
  *
  * Raw X grows from top to bottom.
- * Raw Y grows from left to right.
+ * Raw Y is used for horizontal position, but the current panel orientation
+ * mirrors the X axis relative to the screen.
  * So the screen mapping is:
- * screen_x <- raw_y
+ * screen_x <- mirrored raw_y
  * screen_y <- raw_x
  */
 #define TOUCH_RAW_X_MIN         405U

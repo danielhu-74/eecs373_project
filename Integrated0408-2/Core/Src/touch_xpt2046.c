@@ -286,10 +286,11 @@ HAL_StatusTypeDef Touch_XPT2046_ReadState(Touch_XPT2046_State *state)
     state->raw_y = raw_y;
     state->z1 = z1;
     state->z2 = z2;
-    state->x = touch_map_axis(raw_y,
-                              TOUCH_RAW_Y_MIN,
-                              TOUCH_RAW_Y_MAX,
-                              (uint16_t)(LCD_MINIMAL_WIDTH - 1U));
+    state->x = (uint16_t)((LCD_MINIMAL_WIDTH - 1U) -
+                          touch_map_axis(raw_y,
+                                         TOUCH_RAW_Y_MIN,
+                                         TOUCH_RAW_Y_MAX,
+                                         (uint16_t)(LCD_MINIMAL_WIDTH - 1U)));
     state->y = touch_map_axis(raw_x,
                               TOUCH_RAW_X_MIN,
                               TOUCH_RAW_X_MAX,
