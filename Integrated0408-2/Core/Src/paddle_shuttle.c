@@ -32,12 +32,12 @@ void update_paddle(Player *p, Net *n)
 	if (p->side == SIDE_RIGHT && p->x < n->x + n->w + 32) p->x = n->x + n->w + 32;
 
 
-    if (p->side == SIDE_LEFT){
-    	printf("Left player x: %f:\r\n", p->x);
-    }
-    else{
-    	printf("Right player x: %f:\r\n", p->x);
-    }
+//    if (p->side == SIDE_LEFT){
+//    	printf("Left player x: %f:\r\n", p->x);
+//    }
+//    else{
+//    	printf("Right player x: %f:\r\n", p->x);
+//    }
 }
 
 
@@ -80,8 +80,8 @@ void resolve_paddle_hit(Shuttlecock *s, Player *p, bool swung, float mx, float m
 //        s->vx_q8 = (int16_t)(nx_dir * SWING_VX_Q8);
 //        s->vy_q8 = (int16_t)(ny_dir * SWING_VX_Q8);
     		int16_t dir = (p->side == SIDE_LEFT) ? 1 : -1;
-    	    s->vx_q8   = dir * HITTING_SPEED_X;
-    	    s->vy_q8   = HITTING_SPEED_Y;
+    	    s->vx_q8   = dir * mx;
+    	    s->vy_q8   = my;
     	    Play_SFX(1, 5);
     }
 //    } else {
@@ -105,9 +105,10 @@ void resolve_paddle_hit(Shuttlecock *s, Player *p, bool swung, float mx, float m
 void serve_launch(GameContext *ctx, PlayerSide server)
 {
     Shuttlecock *s   = &ctx->shuttle;
+    Player *p = (server == SIDE_LEFT) ? &ctx->p1 : &ctx->p2;
     int16_t      dir = (server == SIDE_LEFT) ? 1 : -1;
-    s->vx_q8   = dir * HITTING_SPEED_X;
-    s->vy_q8   = HITTING_SPEED_Y;
+    s->vx_q8   = dir * p->mx;
+    s->vy_q8   = p->my;
     s->in_play = true;
     ctx->gs.state = STATE_PLAYING;
     Play_SFX(1, 5);

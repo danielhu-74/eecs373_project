@@ -33,7 +33,8 @@ Core/Src/game_app.o: ../Core/Src/game_app.c ../Core/Inc/game_app.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h \
- ../Core/Inc/pin_config.h ../Core/Inc/lcd_ui.h ../Core/Inc/mp3_control.h
+ ../Core/Inc/pin_config.h ../Core/Inc/lcd_ui.h ../Core/Inc/mp3_control.h \
+ ../Core/Inc/spi.h ../Core/Inc/wii_nunchuk.h
 ../Core/Inc/game_app.h:
 ../Core/Inc/app_flow.h:
 ../Core/Inc/final_stage.h:
@@ -76,3 +77,5 @@ Core/Src/game_app.o: ../Core/Src/game_app.c ../Core/Inc/game_app.h \
 ../Core/Inc/pin_config.h:
 ../Core/Inc/lcd_ui.h:
 ../Core/Inc/mp3_control.h:
+../Core/Inc/spi.h:
+../Core/Inc/wii_nunchuk.h:

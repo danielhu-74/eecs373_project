@@ -1,5 +1,9 @@
-../Core/Src/wii_nunchuk.c:22:6:nunchuk_init	1
-../Core/Src/wii_nunchuk.c:42:6:nunchuk_read_p1	1
-../Core/Src/wii_nunchuk.c:56:6:nunchuk_read_p2	3
-../Core/Src/wii_nunchuk.c:77:6:process_nunchuk_p1	7
-../Core/Src/wii_nunchuk.c:138:6:process_nunchuk_p2	7
+../Core/Src/wii_nunchuk.c:18:26:nunchuk_read_raw	2
+../Core/Src/wii_nunchuk.c:32:26:nunchuk_read_p1	1
+../Core/Src/wii_nunchuk.c:37:26:nunchuk_read_p2	1
+../Core/Src/wii_nunchuk.c:42:13:nunchuk_decode_buttons	5
+../Core/Src/wii_nunchuk.c:52:6:nunchuk_init	1
+../Core/Src/wii_nunchuk.c:68:19:Nunchuk_ReadButtonsP1	3
+../Core/Src/wii_nunchuk.c:87:19:Nunchuk_ReadButtonsP2	3
+../Core/Src/wii_nunchuk.c:106:6:process_nunchuk_p1	8
+../Core/Src/wii_nunchuk.c:140:6:process_nunchuk_p2	9

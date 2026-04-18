@@ -1,8 +1,8 @@
-../Core/Src/lcd_ui.c:126:23:lcd_ui_get_glyph	16	static
-../Core/Src/lcd_ui.c:203:26:lcd_ui_draw_char	48	static
-../Core/Src/lcd_ui.c:242:19:LCD_UI_EnsureReady	8	static
-../Core/Src/lcd_ui.c:260:19:LCD_UI_Clear	16	static
-../Core/Src/lcd_ui.c:269:19:LCD_UI_DrawText	56	static
-../Core/Src/lcd_ui.c:307:19:LCD_UI_DrawTextCentered	48	static
-../Core/Src/lcd_ui.c:328:10:LCD_UI_GetTextWidth	24	static
-../Core/Src/lcd_ui.c:345:10:LCD_UI_GetTextHeight	16	static
+../Core/Src/lcd_ui.c:129:23:lcd_ui_get_glyph	16	static
+../Core/Src/lcd_ui.c:208:26:lcd_ui_draw_char	48	static
+../Core/Src/lcd_ui.c:247:19:LCD_UI_EnsureReady	8	static
+../Core/Src/lcd_ui.c:265:19:LCD_UI_Clear	16	static
+../Core/Src/lcd_ui.c:274:19:LCD_UI_DrawText	56	static
+../Core/Src/lcd_ui.c:312:19:LCD_UI_DrawTextCentered	48	static
+../Core/Src/lcd_ui.c:333:10:LCD_UI_GetTextWidth	24	static
+../Core/Src/lcd_ui.c:350:10:LCD_UI_GetTextHeight	16	static

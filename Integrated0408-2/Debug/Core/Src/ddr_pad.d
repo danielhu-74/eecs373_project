@@ -30,7 +30,8 @@ Core/Src/ddr_pad.o: ../Core/Src/ddr_pad.c ../Core/Inc/ddr_pad.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h \
- ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h
+ ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h \
+ ../Core/Inc/main.h
 ../Core/Inc/ddr_pad.h:
 ../Core/Inc/game_types.h:
 ../Core/Inc/wii_nunchuk.h:
@@ -66,3 +67,4 @@ Core/Src/ddr_pad.o: ../Core/Src/ddr_pad.c ../Core/Inc/ddr_pad.h \
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h:
+../Core/Inc/main.h:

@@ -32,7 +32,7 @@ Core/Src/play_mode.o: ../Core/Src/play_mode.c ../Core/Inc/play_mode.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h \
  ../Core/Inc/pin_config.h ../Core/Inc/lcd_ui.h ../Core/Inc/mp3_control.h \
- ../Core/Inc/spi.h ../Core/Inc/wii_nunchuk.h ../Core/Inc/game_init.h \
+ ../Core/Inc/wii_nunchuk.h ../Core/Inc/game_init.h \
  ../Core/Inc/game_update.h
 ../Core/Inc/play_mode.h:
 ../Core/Inc/game_types.h:
@@ -73,7 +73,6 @@ Core/Src/play_mode.o: ../Core/Src/play_mode.c ../Core/Inc/play_mode.h \
 ../Core/Inc/pin_config.h:
 ../Core/Inc/lcd_ui.h:
 ../Core/Inc/mp3_control.h:
-../Core/Inc/spi.h:
 ../Core/Inc/wii_nunchuk.h:
 ../Core/Inc/game_init.h:
 ../Core/Inc/game_update.h:

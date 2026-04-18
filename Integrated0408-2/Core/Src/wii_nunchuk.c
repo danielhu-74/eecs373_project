@@ -126,12 +126,9 @@ void process_nunchuk_p1(Player *player)
         if (dz > SWING_THRESHOLD) {
             cooldown_timer1 = COOLDOWN_CYCLES;
             player->swing = true;
-            if (player->side == SIDE_LEFT) {
-                player->mx = HITTING_SPEED_X;
-            } else {
-                player->mx = -HITTING_SPEED_X;
-            }
-            player->my = HITTING_SPEED_Y;
+			player->mx = HITTING_SPEED_X * (abs_dz - SWING_THRESHOLD/2) /100;
+			printf("%f\r\n", player->mx);
+            player->my = HITTING_SPEED_Y * (abs_dz - SWING_THRESHOLD/2) /100;
         } else if (dz < -SWING_THRESHOLD) {
             cooldown_timer1 = COOLDOWN_CYCLES;
         }

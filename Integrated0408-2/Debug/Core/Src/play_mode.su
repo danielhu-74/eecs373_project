@@ -1,5 +1,6 @@
-../Core/Src/play_mode.c:22:26:play_mode_draw_static_scoreboard	32	static
-../Core/Src/play_mode.c:62:26:play_mode_render_scoreboard	72	static
-../Core/Src/play_mode.c:122:6:PlayMode_Init	16	static
-../Core/Src/play_mode.c:135:6:PlayMode_Enter	16	static
-../Core/Src/play_mode.c:149:15:PlayMode_Process	48	static
+../Core/Src/play_mode.c:21:26:play_mode_draw_static_scoreboard	32	static
+../Core/Src/play_mode.c:61:26:play_mode_render_scoreboard	72	static
+../Core/Src/play_mode.c:121:6:PlayMode_Init	16	static
+../Core/Src/play_mode.c:134:6:PlayMode_Enter	16	static
+../Core/Src/play_mode.c:148:6:PlayMode_Redraw	16	static
+../Core/Src/play_mode.c:158:15:PlayMode_Process	16	static
