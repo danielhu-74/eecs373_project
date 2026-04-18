@@ -19,6 +19,7 @@ typedef struct
 {
     uint8_t active;
     uint8_t restart_requested;
+    uint8_t prompt_brightness;
     uint8_t touch_latched;
     uint8_t winner_valid;
     uint8_t p1_score;
