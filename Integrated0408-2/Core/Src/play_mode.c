@@ -14,15 +14,14 @@
 
 #define PLAY_LABEL_SCALE  3U
 #define PLAY_SCORE_SCALE  6U
+#define PLAY_SCORE_BOX_X      96U
+#define PLAY_SCORE_BOX_Y      120U
+#define PLAY_SCORE_BOX_WIDTH  (LCD_MINIMAL_WIDTH - 192U)
+#define PLAY_SCORE_BOX_HEIGHT 64U
 
-static HAL_StatusTypeDef play_mode_render_scoreboard(PlayModeContext *ctx, const GameContext *game)
+static HAL_StatusTypeDef play_mode_draw_static_scoreboard(void)
 {
-    char score_text[16];
     HAL_StatusTypeDef status;
-
-    if (ctx == NULL || game == NULL) {
-        return HAL_ERROR;
-    }
 
     status = LCD_UI_Clear(0x00U, 0x00U, 0x00U);
     if (status != HAL_OK) {
@@ -51,13 +50,38 @@ static HAL_StatusTypeDef play_mode_render_scoreboard(PlayModeContext *ctx, const
         return status;
     }
 
-    status = LCD_Minimal_FillRect(48U,
-                                  96U,
-                                  (uint16_t)(LCD_MINIMAL_WIDTH - 96U),
-                                  2U,
-                                  0x30U,
-                                  0x30U,
-                                  0x30U);
+    return LCD_Minimal_FillRect(48U,
+                                96U,
+                                (uint16_t)(LCD_MINIMAL_WIDTH - 96U),
+                                2U,
+                                0x30U,
+                                0x30U,
+                                0x30U);
+}
+
+static HAL_StatusTypeDef play_mode_render_scoreboard(PlayModeContext *ctx, const GameContext *game)
+{
+    char score_text[16];
+    HAL_StatusTypeDef status;
+
+    if (ctx == NULL || game == NULL) {
+        return HAL_ERROR;
+    }
+
+    if (ctx->scoreboard_drawn == 0U) {
+        status = play_mode_draw_static_scoreboard();
+        if (status != HAL_OK) {
+            return status;
+        }
+    }
+
+    status = LCD_Minimal_FillRect(PLAY_SCORE_BOX_X,
+                                  PLAY_SCORE_BOX_Y,
+                                  PLAY_SCORE_BOX_WIDTH,
+                                  PLAY_SCORE_BOX_HEIGHT,
+                                  0x00U,
+                                  0x00U,
+                                  0x00U);
     if (status != HAL_OK) {
         return status;
     }

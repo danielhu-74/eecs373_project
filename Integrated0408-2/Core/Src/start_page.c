@@ -14,20 +14,70 @@
 #define START_LEFT_CENTER_X   (LCD_MINIMAL_WIDTH / 4U)
 #define START_RIGHT_CENTER_X  ((LCD_MINIMAL_WIDTH * 3U) / 4U)
 #define START_DIVIDER_X       ((LCD_MINIMAL_WIDTH / 2U) - 1U)
+#define START_SIDE_WIDTH      (LCD_MINIMAL_WIDTH / 2U)
 
-static HAL_StatusTypeDef start_page_render_side(uint16_t center_x,
-                                                const char *player_label,
-                                                uint8_t ready)
+#define START_DYNAMIC_Y       100U
+#define START_DYNAMIC_HEIGHT  150U
+
+static HAL_StatusTypeDef start_page_clear_side_region(uint16_t center_x)
+{
+    uint16_t region_x = (center_x < (LCD_MINIMAL_WIDTH / 2U)) ? 0U : (uint16_t)(LCD_MINIMAL_WIDTH / 2U);
+
+    return LCD_Minimal_FillRect(region_x,
+                                START_DYNAMIC_Y,
+                                START_SIDE_WIDTH,
+                                START_DYNAMIC_HEIGHT,
+                                0x00U,
+                                0x00U,
+                                0x00U);
+}
+
+static HAL_StatusTypeDef start_page_draw_static_layout(void)
 {
     HAL_StatusTypeDef status;
 
-    status = LCD_UI_DrawTextCentered(center_x,
+    status = LCD_UI_Clear(0x00U, 0x00U, 0x00U);
+    if (status != HAL_OK) {
+        return status;
+    }
+
+    status = LCD_Minimal_FillRect(START_DIVIDER_X,
+                                  24U,
+                                  2U,
+                                  (uint16_t)(LCD_MINIMAL_HEIGHT - 48U),
+                                  0x30U,
+                                  0x30U,
+                                  0x30U);
+    if (status != HAL_OK) {
+        return status;
+    }
+
+    status = LCD_UI_DrawTextCentered((uint16_t)START_LEFT_CENTER_X,
                                      42U,
-                                     player_label,
+                                     "PLAYER 1",
                                      START_LABEL_SCALE,
                                      0xFFU,
                                      0xFFU,
                                      0xFFU);
+    if (status != HAL_OK) {
+        return status;
+    }
+
+    return LCD_UI_DrawTextCentered((uint16_t)START_RIGHT_CENTER_X,
+                                   42U,
+                                   "PLAYER 2",
+                                   START_LABEL_SCALE,
+                                   0xFFU,
+                                   0xFFU,
+                                   0xFFU);
+}
+
+static HAL_StatusTypeDef start_page_render_side(uint16_t center_x,
+                                                uint8_t ready)
+{
+    HAL_StatusTypeDef status;
+
+    status = start_page_clear_side_region(center_x);
     if (status != HAL_OK) {
         return status;
     }
@@ -70,31 +120,18 @@ static HAL_StatusTypeDef start_page_render(const StartPageContext *ctx)
         return HAL_ERROR;
     }
 
-    status = LCD_UI_Clear(0x00U, 0x00U, 0x00U);
-    if (status != HAL_OK) {
-        return status;
-    }
-
-    status = LCD_Minimal_FillRect(START_DIVIDER_X,
-                                  24U,
-                                  2U,
-                                  (uint16_t)(LCD_MINIMAL_HEIGHT - 48U),
-                                  0x30U,
-                                  0x30U,
-                                  0x30U);
+    status = start_page_draw_static_layout();
     if (status != HAL_OK) {
         return status;
     }
 
     status = start_page_render_side((uint16_t)START_LEFT_CENTER_X,
-                                    "PLAYER 1",
                                     ctx->p1_ready);
     if (status != HAL_OK) {
         return status;
     }
 
     return start_page_render_side((uint16_t)START_RIGHT_CENTER_X,
-                                  "PLAYER 2",
                                   ctx->p2_ready);
 }
 
@@ -167,11 +204,13 @@ StartPageEvent StartPage_Process(StartPageContext *ctx)
 
             if (is_left_side != 0U) {
                 ctx->p1_ready = (ctx->p1_ready == 0U) ? 1U : 0U;
+                (void)start_page_render_side((uint16_t)START_LEFT_CENTER_X,
+                                             ctx->p1_ready);
             } else {
                 ctx->p2_ready = (ctx->p2_ready == 0U) ? 1U : 0U;
+                (void)start_page_render_side((uint16_t)START_RIGHT_CENTER_X,
+                                             ctx->p2_ready);
             }
-
-            (void)start_page_render(ctx);
 
             if (ctx->p1_ready != 0U && ctx->p2_ready != 0U) {
                 ctx->active = 0U;
