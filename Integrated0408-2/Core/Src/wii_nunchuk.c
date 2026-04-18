@@ -7,13 +7,23 @@ extern I2C_HandleTypeDef hi2c2;
 extern uint8_t nunchuk_data1[6];
 extern uint8_t nunchuk_data2[6];
 
-static uint16_t last_acc_z1 = 712U;
-static uint16_t last_acc_z2 = 712U;
-static int cooldown_timer1 = 0;
-static int cooldown_timer2 = 0;
+typedef struct
+{
+    uint16_t last_acc_z;
+    uint16_t recent_peak_dz;
+    int cooldown_timer;
+} NunchukSwingContext;
+
+static NunchukSwingContext g_p1_swing_ctx = { 712U, 0U, 0 };
+static NunchukSwingContext g_p2_swing_ctx = { 712U, 0U, 0 };
 
 const int SWING_THRESHOLD = 60;
 const int COOLDOWN_CYCLES = 10;
+
+#define SWING_PEAK_DECAY             10U
+#define SWING_POWER_MAX_DZ           220U
+#define SWING_POWER_MIN_PERCENT      85U
+#define SWING_POWER_MAX_PERCENT      185U
 
 static HAL_StatusTypeDef nunchuk_read_raw(I2C_HandleTypeDef *hi2c, uint8_t *buffer)
 {
@@ -47,6 +57,95 @@ static void nunchuk_decode_buttons(const uint8_t *buffer, NunchukButtonsState *s
 
     state->z_pressed = ((buffer[5] & 0x01U) == 0U) ? 1U : 0U;
     state->c_pressed = ((buffer[5] & 0x02U) == 0U) ? 1U : 0U;
+}
+
+static uint16_t nunchuk_track_recent_peak(NunchukSwingContext *ctx, uint16_t abs_dz)
+{
+    if (ctx == NULL) {
+        return abs_dz;
+    }
+
+    if (ctx->recent_peak_dz > SWING_PEAK_DECAY) {
+        ctx->recent_peak_dz = (uint16_t)(ctx->recent_peak_dz - SWING_PEAK_DECAY);
+    } else {
+        ctx->recent_peak_dz = 0U;
+    }
+
+    if (abs_dz > ctx->recent_peak_dz) {
+        ctx->recent_peak_dz = abs_dz;
+    }
+
+    return ctx->recent_peak_dz;
+}
+
+static uint16_t nunchuk_compute_speed_percent(uint16_t peak_dz)
+{
+    uint32_t clamped_peak;
+    uint32_t scale_percent;
+
+    if (peak_dz <= (uint16_t)SWING_THRESHOLD) {
+        return SWING_POWER_MIN_PERCENT;
+    }
+
+    clamped_peak = peak_dz;
+    if (clamped_peak > SWING_POWER_MAX_DZ) {
+        clamped_peak = SWING_POWER_MAX_DZ;
+    }
+
+    scale_percent = SWING_POWER_MIN_PERCENT +
+        ((clamped_peak - (uint32_t)SWING_THRESHOLD) *
+         (uint32_t)(SWING_POWER_MAX_PERCENT - SWING_POWER_MIN_PERCENT)) /
+        (uint32_t)(SWING_POWER_MAX_DZ - SWING_THRESHOLD);
+
+    return (uint16_t)scale_percent;
+}
+
+static void nunchuk_apply_swing_velocity(Player *player, uint16_t peak_dz)
+{
+    uint16_t speed_percent;
+
+    if (player == NULL) {
+        return;
+    }
+
+    speed_percent = nunchuk_compute_speed_percent(peak_dz);
+    player->mx = ((float)HITTING_SPEED_X * (float)speed_percent) / 100.0f;
+    player->my = ((float)HITTING_SPEED_Y * (float)speed_percent) / 100.0f;
+}
+
+static void nunchuk_process_swing(Player *player,
+                                  const uint8_t *buffer,
+                                  NunchukSwingContext *ctx)
+{
+    uint16_t accel_z;
+    int16_t dz;
+    uint16_t abs_dz;
+    uint16_t peak_dz;
+
+    if (player == NULL || buffer == NULL || ctx == NULL) {
+        return;
+    }
+
+    accel_z = (uint16_t)((buffer[4] << 2) | ((buffer[5] >> 6) & 0x03U));
+    dz = (int16_t)(accel_z - ctx->last_acc_z);
+    abs_dz = (uint16_t)abs(dz);
+    peak_dz = nunchuk_track_recent_peak(ctx, abs_dz);
+    ctx->last_acc_z = accel_z;
+
+    if (ctx->cooldown_timer > 0) {
+        ctx->cooldown_timer--;
+        if (ctx->cooldown_timer == 0) {
+            player->swing = false;
+        }
+        return;
+    }
+
+    if (dz > SWING_THRESHOLD) {
+        ctx->cooldown_timer = COOLDOWN_CYCLES;
+        player->swing = true;
+        nunchuk_apply_swing_velocity(player, peak_dz);
+        ctx->recent_peak_dz = 0U;
+    }
 }
 
 void nunchuk_init(void)
@@ -105,72 +204,18 @@ HAL_StatusTypeDef Nunchuk_ReadButtonsP2(NunchukButtonsState *state)
 
 void process_nunchuk_p1(Player *player)
 {
-    uint16_t accel_z;
-    int16_t dz;
-    int16_t abs_dz;
-
     if (player == NULL || nunchuk_read_p1() != HAL_OK) {
         return;
     }
 
-    accel_z = (uint16_t)((nunchuk_data1[4] << 2) | ((nunchuk_data1[5] >> 6) & 0x03U));
-    dz = (int16_t)(accel_z - last_acc_z1);
-    abs_dz = (int16_t)abs(dz);
-
-    if (cooldown_timer1 > 0) {
-        cooldown_timer1--;
-        if (cooldown_timer1 == 0) {
-            player->swing = false;
-        }
-    } else if (abs_dz > SWING_THRESHOLD) {
-        if (dz > SWING_THRESHOLD) {
-            cooldown_timer1 = COOLDOWN_CYCLES;
-            player->swing = true;
-			player->mx = HITTING_SPEED_X * (abs_dz - SWING_THRESHOLD/2) /100;
-			printf("%f\r\n", player->mx);
-            player->my = HITTING_SPEED_Y * (abs_dz - SWING_THRESHOLD/2) /100;
-        } else if (dz < -SWING_THRESHOLD) {
-            cooldown_timer1 = COOLDOWN_CYCLES;
-        }
-    }
-
-    last_acc_z1 = accel_z;
+    nunchuk_process_swing(player, nunchuk_data1, &g_p1_swing_ctx);
 }
 
 void process_nunchuk_p2(Player *player)
 {
-    uint16_t accel_z;
-    int16_t dz;
-    int16_t abs_dz;
-
     if (player == NULL || nunchuk_read_p2() != HAL_OK) {
         return;
     }
 
-    accel_z = (uint16_t)((nunchuk_data2[4] << 2) | ((nunchuk_data2[5] >> 6) & 0x03U));
-    dz = (int16_t)(accel_z - last_acc_z2);
-    abs_dz = (int16_t)abs(dz);
-
-    if (cooldown_timer2 > 0) {
-        cooldown_timer2--;
-        if (cooldown_timer2 == 0) {
-            player->swing = false;
-        }
-    } else if (abs_dz > SWING_THRESHOLD) {
-        if (dz > SWING_THRESHOLD) {
-            cooldown_timer2 = COOLDOWN_CYCLES;
-            player->swing = true;
-            if (player->side == SIDE_LEFT) {
-                player->mx = HITTING_SPEED_X;
-            } else {
-                player->mx = -HITTING_SPEED_X;
-            }
-            player->my = HITTING_SPEED_Y;
-        } else if (dz < -SWING_THRESHOLD) {
-            cooldown_timer2 = COOLDOWN_CYCLES;
-            player->my = -0.707f;
-        }
-    }
-
-    last_acc_z2 = accel_z;
+    nunchuk_process_swing(player, nunchuk_data2, &g_p2_swing_ctx);
 }

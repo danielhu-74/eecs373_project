@@ -61,7 +61,7 @@ void game_update(GameContext *ctx)
     /* Paddle hits */
     if (collision_shuttle_paddle(s, &ctx->p1)){
         //printf("player1 swung? %d\n", ctx->p1.swing);
-        resolve_paddle_hit(s, &ctx->p1, ctx->p1.swing, ctx->p1.mx, ctx->p2.my);
+        resolve_paddle_hit(s, &ctx->p1, ctx->p1.swing, ctx->p1.mx, ctx->p1.my);
     }
 
     if (collision_shuttle_paddle(s, &ctx->p2)){
