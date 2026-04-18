@@ -1,0 +1,5 @@
+../Core/Src/play_mode.c:22:26:play_mode_draw_static_scoreboard	4
+../Core/Src/play_mode.c:62:26:play_mode_render_scoreboard	8
+../Core/Src/play_mode.c:122:6:PlayMode_Init	2
+../Core/Src/play_mode.c:135:6:PlayMode_Enter	3
+../Core/Src/play_mode.c:149:15:PlayMode_Process	9

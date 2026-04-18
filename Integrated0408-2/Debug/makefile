@@ -60,8 +60,8 @@ all: main-build
 main-build: DDR\ Pad.elf secondary-outputs
 
 # Tool invocations
-DDR\ Pad.elf DDR\ Pad.map: $(OBJS) $(USER_OBJS) C:\Users\kinchitc\STM32CubeIDE\workspace_1.19.0\Integrated0416_0247.zip_expanded\Integrated0408\STM32L4R5ZITXP_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "DDR Pad.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\kinchitc\STM32CubeIDE\workspace_1.19.0\Integrated0416_0247.zip_expanded\Integrated0408\STM32L4R5ZITXP_FLASH.ld" --specs=nosys.specs -Wl,-Map="DDR Pad.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+DDR\ Pad.elf DDR\ Pad.map: $(OBJS) $(USER_OBJS) C:\Users\danqihu\eecs373_project\Integrated0408-2\STM32L4R5ZITXP_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "DDR Pad.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\danqihu\eecs373_project\Integrated0408-2\STM32L4R5ZITXP_FLASH.ld" --specs=nosys.specs -Wl,-Map="DDR Pad.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

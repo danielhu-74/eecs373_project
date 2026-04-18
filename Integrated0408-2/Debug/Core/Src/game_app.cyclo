@@ -1,0 +1,6 @@
+../Core/Src/game_app.c:30:13:game_app_reset_pre_game_sequence	2
+../Core/Src/game_app.c:40:13:game_app_render_pre_game_page	4
+../Core/Src/game_app.c:69:13:game_app_enter_pre_game_sequence	2
+../Core/Src/game_app.c:81:16:game_app_process_pre_game_sequence	5
+../Core/Src/game_app.c:106:6:GameApp_Init	2
+../Core/Src/game_app.c:117:6:GameApp_Process	10

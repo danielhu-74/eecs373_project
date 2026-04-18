@@ -1,0 +1,13 @@
+../Core/Src/start_page.c:25:16:start_page_get_prompt_brightness	32	static
+../Core/Src/start_page.c:41:26:start_page_clear_centered_text_area	64	static
+../Core/Src/start_page.c:75:26:start_page_clear_side_region	40	static
+../Core/Src/start_page.c:88:26:start_page_draw_static_layout	32	static
+../Core/Src/start_page.c:128:26:start_page_render_side	40	static
+../Core/Src/start_page.c:169:26:start_page_render_prompt	40	static
+../Core/Src/start_page.c:194:26:start_page_draw_prompt_in_place	40	static
+../Core/Src/start_page.c:210:26:start_page_render	24	static
+../Core/Src/start_page.c:235:13:start_page_update_prompt_animation	24	static
+../Core/Src/start_page.c:257:13:start_page_seed_touch_latch	32	static
+../Core/Src/start_page.c:270:6:StartPage_Init	16	static
+../Core/Src/start_page.c:279:6:StartPage_Enter	16	static
+../Core/Src/start_page.c:296:16:StartPage_Process	40	static

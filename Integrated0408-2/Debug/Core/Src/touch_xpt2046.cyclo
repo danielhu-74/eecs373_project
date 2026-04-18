@@ -1,0 +1,11 @@
+../Core/Src/touch_xpt2046.c:20:13:touch_deselect_all	1
+../Core/Src/touch_xpt2046.c:26:16:touch_pressure_is_valid	6
+../Core/Src/touch_xpt2046.c:43:26:touch_read_value	3
+../Core/Src/touch_xpt2046.c:60:26:touch_spi_set_prescaler	4
+../Core/Src/touch_xpt2046.c:79:26:touch_read_raw_once	9
+../Core/Src/touch_xpt2046.c:103:17:touch_map_axis	3
+../Core/Src/touch_xpt2046.c:122:19:Touch_XPT2046_Init	1
+../Core/Src/touch_xpt2046.c:149:15:Touch_XPT2046_ReadIrq	1
+../Core/Src/touch_xpt2046.c:158:9:Touch_XPT2046_IsPressed	1
+../Core/Src/touch_xpt2046.c:167:19:Touch_XPT2046_ReadRaw	20
+../Core/Src/touch_xpt2046.c:261:19:Touch_XPT2046_ReadState	3

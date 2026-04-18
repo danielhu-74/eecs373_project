@@ -1,0 +1,13 @@
+../Core/Src/final_stage.c:17:16:final_stage_get_prompt_brightness	2
+../Core/Src/final_stage.c:33:26:final_stage_clear_centered_text_area	6
+../Core/Src/final_stage.c:67:26:final_stage_render_prompt	2
+../Core/Src/final_stage.c:88:26:final_stage_draw_prompt_in_place	1
+../Core/Src/final_stage.c:99:13:final_stage_update_prompt_animation	4
+../Core/Src/final_stage.c:116:13:final_stage_seed_touch_latch	4
+../Core/Src/final_stage.c:129:6:FinalStage_Init	2
+../Core/Src/final_stage.c:138:6:FinalStage_Enter	4
+../Core/Src/final_stage.c:195:17:FinalStage_Process	8
+../Core/Src/final_stage.c:239:6:FinalStage_RequestRestart	2
+../Core/Src/final_stage.c:248:6:FinalStage_ClearRestart	2
+../Core/Src/final_stage.c:257:9:FinalStage_HasWinner	2
+../Core/Src/final_stage.c:266:12:FinalStage_GetWinner	3

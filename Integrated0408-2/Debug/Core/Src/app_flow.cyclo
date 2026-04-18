@@ -1,0 +1,10 @@
+../Core/Src/app_flow.c:5:13:app_flow_mark_stage	3
+../Core/Src/app_flow.c:17:6:AppFlow_Init	2
+../Core/Src/app_flow.c:33:6:AppFlow_GoToStartPage	2
+../Core/Src/app_flow.c:42:6:AppFlow_GoToPreGameSequence	2
+../Core/Src/app_flow.c:51:6:AppFlow_GoToPlayMode	2
+../Core/Src/app_flow.c:60:6:AppFlow_GoToFinalStage	2
+../Core/Src/app_flow.c:69:10:AppFlow_GetStage	2
+../Core/Src/app_flow.c:78:9:AppFlow_HasStageChanged	2
+../Core/Src/app_flow.c:87:6:AppFlow_ClearStageChanged	2
+../Core/Src/app_flow.c:96:13:AppFlow_GetStageName	5

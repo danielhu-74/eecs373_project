@@ -9,8 +9,8 @@ C_SRCS += \
 ../Core/Src/collision.c \
 ../Core/Src/ddr_pad.c \
 ../Core/Src/final_stage.c \
-../Core/Src/game_init.c \
 ../Core/Src/game_app.c \
+../Core/Src/game_init.c \
 ../Core/Src/game_update.c \
 ../Core/Src/lcd_minimal.c \
 ../Core/Src/lcd_touch_demo.c \
@@ -25,18 +25,18 @@ C_SRCS += \
 ../Core/Src/stm32l4xx_hal_msp.c \
 ../Core/Src/stm32l4xx_it.c \
 ../Core/Src/syscalls.c \
- ../Core/Src/sysmem.c \
- ../Core/Src/system_stm32l4xx.c \
+../Core/Src/sysmem.c \
+../Core/Src/system_stm32l4xx.c \
 ../Core/Src/touch_xpt2046.c \
- ../Core/Src/wii_nunchuk.c 
+../Core/Src/wii_nunchuk.c 
 
 OBJS += \
 ./Core/Src/app_flow.o \
 ./Core/Src/collision.o \
 ./Core/Src/ddr_pad.o \
 ./Core/Src/final_stage.o \
-./Core/Src/game_init.o \
 ./Core/Src/game_app.o \
+./Core/Src/game_init.o \
 ./Core/Src/game_update.o \
 ./Core/Src/lcd_minimal.o \
 ./Core/Src/lcd_touch_demo.o \
@@ -51,18 +51,18 @@ OBJS += \
 ./Core/Src/stm32l4xx_hal_msp.o \
 ./Core/Src/stm32l4xx_it.o \
 ./Core/Src/syscalls.o \
- ./Core/Src/sysmem.o \
- ./Core/Src/system_stm32l4xx.o \
+./Core/Src/sysmem.o \
+./Core/Src/system_stm32l4xx.o \
 ./Core/Src/touch_xpt2046.o \
- ./Core/Src/wii_nunchuk.o 
+./Core/Src/wii_nunchuk.o 
 
 C_DEPS += \
 ./Core/Src/app_flow.d \
 ./Core/Src/collision.d \
 ./Core/Src/ddr_pad.d \
 ./Core/Src/final_stage.d \
-./Core/Src/game_init.d \
 ./Core/Src/game_app.d \
+./Core/Src/game_init.d \
 ./Core/Src/game_update.d \
 ./Core/Src/lcd_minimal.d \
 ./Core/Src/lcd_touch_demo.d \
@@ -77,10 +77,10 @@ C_DEPS += \
 ./Core/Src/stm32l4xx_hal_msp.d \
 ./Core/Src/stm32l4xx_it.d \
 ./Core/Src/syscalls.d \
- ./Core/Src/sysmem.d \
- ./Core/Src/system_stm32l4xx.d \
+./Core/Src/sysmem.d \
+./Core/Src/system_stm32l4xx.d \
 ./Core/Src/touch_xpt2046.d \
- ./Core/Src/wii_nunchuk.d 
+./Core/Src/wii_nunchuk.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

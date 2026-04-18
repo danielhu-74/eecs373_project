@@ -30,11 +30,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h \
- ../Core/Inc/game_types.h ../Core/Inc/collision.h \
- ../Core/Inc/game_types.h ../Core/Inc/game_init.h \
- ../Core/Inc/game_update.h ../Core/Inc/paddle_shuttle.h \
- ../Core/Inc/scoring.h ../Core/Inc/spi.h ../Core/Inc/main.h \
- ../Core/Inc/wii_nunchuk.h ../Core/Inc/ddr_pad.h
+ ../Core/Inc/game_app.h ../Core/Inc/app_flow.h ../Core/Inc/final_stage.h \
+ ../Core/Inc/game_types.h ../Core/Inc/play_mode.h \
+ ../Core/Inc/start_page.h ../Core/Inc/mp3_control.h ../Core/Inc/main.h \
+ ../Core/Inc/wii_nunchuk.h
 ../Core/Inc/main.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h:
 ../Core/Inc/stm32l4xx_hal_conf.h:
@@ -67,14 +66,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h:
+../Core/Inc/game_app.h:
+../Core/Inc/app_flow.h:
+../Core/Inc/final_stage.h:
 ../Core/Inc/game_types.h:
-../Core/Inc/collision.h:
-../Core/Inc/game_types.h:
-../Core/Inc/game_init.h:
-../Core/Inc/game_update.h:
-../Core/Inc/paddle_shuttle.h:
-../Core/Inc/scoring.h:
-../Core/Inc/spi.h:
+../Core/Inc/play_mode.h:
+../Core/Inc/start_page.h:
+../Core/Inc/mp3_control.h:
 ../Core/Inc/main.h:
 ../Core/Inc/wii_nunchuk.h:
-../Core/Inc/ddr_pad.h:

@@ -1,0 +1,7 @@
+../Core/Src/lcd_touch_demo.c:50:23:lcd_touch_demo_get_glyph	16	static
+../Core/Src/lcd_touch_demo.c:71:26:lcd_touch_demo_draw_char	48	static
+../Core/Src/lcd_touch_demo.c:102:26:lcd_touch_demo_draw_text_centered	64	static
+../Core/Src/lcd_touch_demo.c:139:26:lcd_touch_demo_draw_splash	32	static
+../Core/Src/lcd_touch_demo.c:159:19:LCD_Touch_ColorDemo_Init	8	static
+../Core/Src/lcd_touch_demo.c:181:19:LCD_Touch_ColorDemo_Process	32	static
+../Core/Src/lcd_touch_demo.c:212:19:LCD_Touch_ColorDemo_Run	8	static

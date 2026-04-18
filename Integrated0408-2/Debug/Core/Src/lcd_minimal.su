@@ -1,0 +1,16 @@
+../Core/Src/lcd_minimal.c:16:26:lcd_minimal_tx	16	static
+../Core/Src/lcd_minimal.c:25:26:lcd_minimal_gpio_init	40	static
+../Core/Src/lcd_minimal.c:54:26:lcd_minimal_spi3_init	16	static
+../Core/Src/lcd_minimal.c:76:26:lcd_minimal_write_command	16	static
+../Core/Src/lcd_minimal.c:90:26:lcd_minimal_write_data	16	static
+../Core/Src/lcd_minimal.c:104:26:lcd_minimal_write_buffer	16	static
+../Core/Src/lcd_minimal.c:118:13:lcd_minimal_reset	8	static
+../Core/Src/lcd_minimal.c:126:26:lcd_minimal_set_window	32	static
+../Core/Src/lcd_minimal.c:160:26:lcd_minimal_write_repeated_rgb666	216	static
+../Core/Src/lcd_minimal.c:190:19:LCD_Minimal_FillRect	32	static
+../Core/Src/lcd_minimal.c:234:19:LCD_Minimal_Init	8	static
+../Core/Src/lcd_minimal.c:274:19:LCD_Minimal_FillColor	16	static
+../Core/Src/lcd_minimal.c:293:19:LCD_Minimal_ShowTestPattern	24	static
+../Core/Src/lcd_minimal.c:328:6:LCD_Minimal_BacklightSet	16	static
+../Core/Src/lcd_minimal.c:333:6:LCD_Minimal_BacklightOn	8	static
+../Core/Src/lcd_minimal.c:338:6:LCD_Minimal_BacklightOff	8	static
