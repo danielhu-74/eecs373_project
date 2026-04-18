@@ -85,6 +85,17 @@ static HAL_StatusTypeDef final_stage_render_prompt(uint8_t prompt_brightness)
                                    prompt_brightness);
 }
 
+static HAL_StatusTypeDef final_stage_draw_prompt_in_place(uint8_t prompt_brightness)
+{
+    return LCD_UI_DrawTextCentered((uint16_t)(LCD_MINIMAL_WIDTH / 2U),
+                                   250U,
+                                   "TAP TO RESTART",
+                                   FINAL_STAGE_LINE_SCALE,
+                                   prompt_brightness,
+                                   prompt_brightness,
+                                   prompt_brightness);
+}
+
 static void final_stage_update_prompt_animation(FinalStageContext *ctx, uint32_t now)
 {
     uint8_t prompt_brightness;
@@ -99,7 +110,7 @@ static void final_stage_update_prompt_animation(FinalStageContext *ctx, uint32_t
     }
 
     ctx->prompt_brightness = prompt_brightness;
-    (void)final_stage_render_prompt(prompt_brightness);
+    (void)final_stage_draw_prompt_in_place(prompt_brightness);
 }
 
 static void final_stage_seed_touch_latch(FinalStageContext *ctx)

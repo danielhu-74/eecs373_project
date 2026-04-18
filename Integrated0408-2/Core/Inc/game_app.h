@@ -12,6 +12,8 @@ typedef struct
 {
     AppContext flow;
     GameContext game;
+    uint8_t pre_game_page_index;
+    uint32_t pre_game_page_started_tick;
 } GameAppContext;
 
 void GameApp_Init(GameAppContext *ctx);

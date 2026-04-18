@@ -61,6 +61,7 @@ static HAL_StatusTypeDef play_mode_draw_static_scoreboard(void)
 
 static HAL_StatusTypeDef play_mode_render_scoreboard(PlayModeContext *ctx, const GameContext *game)
 {
+    char previous_score_text[16];
     char score_text[16];
     HAL_StatusTypeDef status;
 
@@ -75,15 +76,23 @@ static HAL_StatusTypeDef play_mode_render_scoreboard(PlayModeContext *ctx, const
         }
     }
 
-    status = LCD_Minimal_FillRect(PLAY_SCORE_BOX_X,
-                                  PLAY_SCORE_BOX_Y,
-                                  PLAY_SCORE_BOX_WIDTH,
-                                  PLAY_SCORE_BOX_HEIGHT,
-                                  0x00U,
-                                  0x00U,
-                                  0x00U);
-    if (status != HAL_OK) {
-        return status;
+    if (ctx->scoreboard_drawn != 0U) {
+        (void)snprintf(previous_score_text,
+                       sizeof(previous_score_text),
+                       "%u:%u",
+                       (unsigned int)ctx->last_p1_score,
+                       (unsigned int)ctx->last_p2_score);
+
+        status = LCD_UI_DrawTextCentered((uint16_t)(LCD_MINIMAL_WIDTH / 2U),
+                                         132U,
+                                         previous_score_text,
+                                         PLAY_SCORE_SCALE,
+                                         0x00U,
+                                         0x00U,
+                                         0x00U);
+        if (status != HAL_OK) {
+            return status;
+        }
     }
 
     (void)snprintf(score_text,

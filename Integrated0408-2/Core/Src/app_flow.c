@@ -39,6 +39,15 @@ void AppFlow_GoToStartPage(AppContext *app)
     app_flow_mark_stage(app, APP_STAGE_START_PAGE);
 }
 
+void AppFlow_GoToPreGameSequence(AppContext *app)
+{
+    if (app == NULL) {
+        return;
+    }
+
+    app_flow_mark_stage(app, APP_STAGE_PRE_GAME_SEQUENCE);
+}
+
 void AppFlow_GoToPlayMode(AppContext *app)
 {
     if (app == NULL) {
@@ -89,6 +98,8 @@ const char *AppFlow_GetStageName(AppStage stage)
     switch (stage) {
     case APP_STAGE_START_PAGE:
         return "start_page";
+    case APP_STAGE_PRE_GAME_SEQUENCE:
+        return "pre_game_sequence";
     case APP_STAGE_PLAY_MODE:
         return "play_mode";
     case APP_STAGE_FINAL_STAGE:

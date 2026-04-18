@@ -14,8 +14,9 @@ extern "C" {
 typedef enum
 {
     APP_STAGE_START_PAGE = 0,
-    APP_STAGE_PLAY_MODE = 1,
-    APP_STAGE_FINAL_STAGE = 2
+    APP_STAGE_PRE_GAME_SEQUENCE = 1,
+    APP_STAGE_PLAY_MODE = 2,
+    APP_STAGE_FINAL_STAGE = 3
 } AppStage;
 
 typedef struct
@@ -29,6 +30,7 @@ typedef struct
 
 void AppFlow_Init(AppContext *app);
 void AppFlow_GoToStartPage(AppContext *app);
+void AppFlow_GoToPreGameSequence(AppContext *app);
 void AppFlow_GoToPlayMode(AppContext *app);
 void AppFlow_GoToFinalStage(AppContext *app);
 AppStage AppFlow_GetStage(const AppContext *app);
