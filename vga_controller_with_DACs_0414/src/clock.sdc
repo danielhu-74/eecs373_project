@@ -1,0 +1,1 @@
+create_clock -name my_clk_constraint -period 37.037 [get_ports {clk}]

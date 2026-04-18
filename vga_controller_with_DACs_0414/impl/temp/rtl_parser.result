@@ -1,0 +1,102 @@
+[
+ {
+  "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/top.v",
+  "InstLine" : 1,
+  "InstName" : "top",
+  "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/top.v",
+  "ModuleLine" : 1,
+  "ModuleName" : "top",
+  "SubInsts" : [
+   {
+    "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/top.v",
+    "InstLine" : 89,
+    "InstName" : "u_spi",
+    "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/spi_rx_game.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "spi_rx_game",
+    "SubInsts" : [
+     {
+      "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/spi_rx_game.v",
+      "InstLine" : 23,
+      "InstName" : "u_sync_sck",
+      "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/sync_2ff.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "sync_2ff"
+     },
+     {
+      "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/spi_rx_game.v",
+      "InstLine" : 24,
+      "InstName" : "u_sync_mosi",
+      "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/sync_2ff.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "sync_2ff"
+     },
+     {
+      "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/spi_rx_game.v",
+      "InstLine" : 25,
+      "InstName" : "u_sync_ss",
+      "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/sync_2ff.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "sync_2ff"
+     },
+     {
+      "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/spi_rx_game.v",
+      "InstLine" : 30,
+      "InstName" : "u_q_sck",
+      "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/signal_qualifier.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "signal_qualifier"
+     },
+     {
+      "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/spi_rx_game.v",
+      "InstLine" : 31,
+      "InstName" : "u_q_ss",
+      "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/signal_qualifier.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "signal_qualifier"
+     },
+     {
+      "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/spi_rx_game.v",
+      "InstLine" : 50,
+      "InstName" : "u_rx",
+      "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/spi_byte_rx.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "spi_byte_rx"
+     }
+    ]
+   },
+   {
+    "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/top.v",
+    "InstLine" : 195,
+    "InstName" : "u_p1_gen",
+    "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/player_sprite_engine.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "player_sprite_engine"
+   },
+   {
+    "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/top.v",
+    "InstLine" : 204,
+    "InstName" : "u_p1_swing_gen",
+    "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/player_sprite_engine.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "player_sprite_engine"
+   },
+   {
+    "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/top.v",
+    "InstLine" : 228,
+    "InstName" : "u_p2_gen",
+    "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/player2_sprite_engine2.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "player2_sprite_engine2"
+   },
+   {
+    "InstFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/top.v",
+    "InstLine" : 236,
+    "InstName" : "u_p2_swing_gen",
+    "ModuleFile" : "C:/Users/kinchitc/Desktop/vga_controller_with_DACs_0414/src/player2_sprite_engine2.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "player2_sprite_engine2"
+   }
+  ]
+ }
+]

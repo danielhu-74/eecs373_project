@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module name="top" Register="128" Alu="82" Lut="192" T_Register="270(128)" T_Alu="128(82)" T_Lut="336(192)" T_Bsram="4(0)">
+ <SubModule name="u_spi" Register="107" Alu="4" Lut="22" T_Register="140(107)" T_Alu="4(4)" T_Lut="34(22)">
+  <SubModule name="u_sync_sck" Register="2" T_Register="2(2)"/>
+  <SubModule name="u_sync_mosi" Register="2" T_Register="2(2)"/>
+  <SubModule name="u_sync_ss" Register="2" T_Register="2(2)"/>
+  <SubModule name="u_q_sck" Register="4" Lut="3" T_Register="4(4)" T_Lut="3(3)"/>
+  <SubModule name="u_q_ss" Register="4" Lut="3" T_Register="4(4)" T_Lut="3(3)"/>
+  <SubModule name="u_rx" Register="19" Lut="6" T_Register="19(19)" T_Lut="6(6)"/>
+ </SubModule>
+ <SubModule name="u_p1_gen" Register="1" Alu="11" Lut="48" Bsram="1" T_Register="1(1)" T_Alu="11(11)" T_Lut="48(48)" T_Bsram="1(1)"/>
+ <SubModule name="u_p1_swing_gen" Alu="11" Bsram="1" T_Alu="11(11)" T_Bsram="1(1)"/>
+ <SubModule name="u_p2_gen" Register="1" Alu="10" Lut="57" Bsram="1" T_Register="1(1)" T_Alu="10(10)" T_Lut="57(57)" T_Bsram="1(1)"/>
+ <SubModule name="u_p2_swing_gen" Alu="10" Lut="5" Bsram="1" T_Alu="10(10)" T_Lut="5(5)" T_Bsram="1(1)"/>
+</Module>
