@@ -122,6 +122,9 @@ static const uint8_t font_W[7] = {
 static const uint8_t font_Y[7] = {
     0x11U, 0x11U, 0x0AU, 0x04U, 0x04U, 0x04U, 0x04U
 };
+static const uint8_t font_Z[7] = {
+    0x1FU, 0x01U, 0x02U, 0x04U, 0x08U, 0x10U, 0x1FU
+};
 
 static const uint8_t *lcd_ui_get_glyph(char c)
 {
@@ -194,6 +197,8 @@ static const uint8_t *lcd_ui_get_glyph(char c)
         return font_W;
     case 'Y':
         return font_Y;
+    case 'Z':
+        return font_Z;
     case ' ':
     default:
         return font_space;
