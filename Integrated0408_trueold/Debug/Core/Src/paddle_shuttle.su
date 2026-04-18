@@ -1,0 +1,5 @@
+../Core/Src/paddle_shuttle.c:8:6:update_shuttlecock	16	static
+../Core/Src/paddle_shuttle.c:23:6:update_paddle	16	static
+../Core/Src/paddle_shuttle.c:63:6:resolve_paddle_hit	40	static
+../Core/Src/paddle_shuttle.c:104:6:serve_launch	24	static
+../Core/Src/paddle_shuttle.c:114:6:handle_serve_state	24	static

@@ -1,0 +1,5 @@
+../Core/Src/paddle_shuttle.c:9:6:update_shuttlecock	3
+../Core/Src/paddle_shuttle.c:24:6:update_paddle	10
+../Core/Src/paddle_shuttle.c:64:6:resolve_paddle_hit	4
+../Core/Src/paddle_shuttle.c:105:6:serve_launch	2
+../Core/Src/paddle_shuttle.c:116:6:handle_serve_state	3

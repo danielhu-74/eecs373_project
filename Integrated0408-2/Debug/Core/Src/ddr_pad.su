@@ -1,0 +1,7 @@
+../Core/Src/ddr_pad.c:16:6:delay_us	24	static
+../Core/Src/ddr_pad.c:23:9:PS2_Exchange	24	static
+../Core/Src/ddr_pad.c:48:9:PS2_SwapByte_Pad2	24	static
+../Core/Src/ddr_pad.c:71:6:PS2_ReadPad	8	static
+../Core/Src/ddr_pad.c:89:6:PS2_ReadPad_P2	8	static
+../Core/Src/ddr_pad.c:106:6:process_Pad	40	static
+../Core/Src/ddr_pad.c:158:6:process_Pad_P2	40	static

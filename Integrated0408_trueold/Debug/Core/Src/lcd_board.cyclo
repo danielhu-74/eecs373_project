@@ -1,0 +1,3 @@
+../Core/Src/lcd_board.c:5:19:LCD_Board_InitRecommendedSPI3	1
+../Core/Src/lcd_board.c:48:6:LCD_Board_FillST7789_240x240	2
+../Core/Src/lcd_board.c:69:6:LCD_Board_FillILI9341_240x320	2

@@ -1,0 +1,2 @@
+../Core/Src/scoring.c:6:6:game_reset_serve	24	static
+../Core/Src/scoring.c:27:6:game_score_point	24	static

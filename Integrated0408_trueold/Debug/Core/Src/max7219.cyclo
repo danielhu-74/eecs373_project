@@ -1,0 +1,17 @@
+../Core/Src/max7219.c:3:26:max7219_validate	5
+../Core/Src/max7219.c:16:13:max7219_select	1
+../Core/Src/max7219.c:21:13:max7219_deselect	1
+../Core/Src/max7219.c:26:26:max7219_tx_pair	1
+../Core/Src/max7219.c:36:19:MAX7219_InitBus	2
+../Core/Src/max7219.c:46:19:MAX7219_WriteAll	4
+../Core/Src/max7219.c:67:19:MAX7219_WriteDevice	6
+../Core/Src/max7219.c:103:19:MAX7219_SetPower	2
+../Core/Src/max7219.c:108:19:MAX7219_SetDisplayTest	2
+../Core/Src/max7219.c:113:19:MAX7219_SetIntensity	2
+../Core/Src/max7219.c:122:19:MAX7219_SetScanLimit	2
+../Core/Src/max7219.c:131:19:MAX7219_SetDecodeMode	1
+../Core/Src/max7219.c:136:19:MAX7219_ClearAll	4
+../Core/Src/max7219.c:153:19:MAX7219_Configure7Seg	8
+../Core/Src/max7219.c:184:19:MAX7219_SetDigitRaw	2
+../Core/Src/max7219.c:199:19:MAX7219_SetDigitCodeB	3
+../Core/Src/max7219.c:222:19:MAX7219_DisplayUnsigned	7
