@@ -187,13 +187,13 @@ static HAL_StatusTypeDef lcd_minimal_write_repeated_rgb666(uint8_t red,
     return HAL_OK;
 }
 
-static HAL_StatusTypeDef lcd_minimal_fill_rect(uint16_t x,
-                                               uint16_t y,
-                                               uint16_t width,
-                                               uint16_t height,
-                                               uint8_t red,
-                                               uint8_t green,
-                                               uint8_t blue)
+HAL_StatusTypeDef LCD_Minimal_FillRect(uint16_t x,
+                                       uint16_t y,
+                                       uint16_t width,
+                                       uint16_t height,
+                                       uint8_t red,
+                                       uint8_t green,
+                                       uint8_t blue)
 {
     uint16_t x1;
     uint16_t y1;
@@ -296,31 +296,46 @@ HAL_StatusTypeDef LCD_Minimal_ShowTestPattern(void)
         return HAL_ERROR;
     }
 
-    if (lcd_minimal_fill_rect(0U,
-                              0U,
-                              (uint16_t)(LCD_MINIMAL_WIDTH / 2U),
-                              LCD_MINIMAL_HEIGHT,
-                              0xFFU,
-                              0x00U,
-                              0x00U) != HAL_OK) {
+    if (LCD_Minimal_FillRect(0U,
+                             0U,
+                             (uint16_t)(LCD_MINIMAL_WIDTH / 2U),
+                             LCD_MINIMAL_HEIGHT,
+                             0xFFU,
+                             0x00U,
+                             0x00U) != HAL_OK) {
         return HAL_ERROR;
     }
 
-    if (lcd_minimal_fill_rect((uint16_t)(LCD_MINIMAL_WIDTH / 2U),
-                              0U,
-                              (uint16_t)(LCD_MINIMAL_WIDTH - (LCD_MINIMAL_WIDTH / 2U)),
-                              LCD_MINIMAL_HEIGHT,
-                              0x00U,
-                              0x00U,
-                              0xFFU) != HAL_OK) {
+    if (LCD_Minimal_FillRect((uint16_t)(LCD_MINIMAL_WIDTH / 2U),
+                             0U,
+                             (uint16_t)(LCD_MINIMAL_WIDTH - (LCD_MINIMAL_WIDTH / 2U)),
+                             LCD_MINIMAL_HEIGHT,
+                             0x00U,
+                             0x00U,
+                             0xFFU) != HAL_OK) {
         return HAL_ERROR;
     }
 
-    return lcd_minimal_fill_rect(0U,
-                                 0U,
-                                 LCD_MINIMAL_WIDTH,
-                                 24U,
-                                 0x00U,
-                                 0x80U,
-                                 0x00U);
+    return LCD_Minimal_FillRect(0U,
+                                0U,
+                                LCD_MINIMAL_WIDTH,
+                                24U,
+                                0x00U,
+                                0x80U,
+                                0x00U);
+}
+
+void LCD_Minimal_BacklightSet(GPIO_PinState state)
+{
+    HAL_GPIO_WritePin(PINMAP_LCD_BL_GPIO_Port, PINMAP_LCD_BL_Pin, state);
+}
+
+void LCD_Minimal_BacklightOn(void)
+{
+    LCD_Minimal_BacklightSet(GPIO_PIN_SET);
+}
+
+void LCD_Minimal_BacklightOff(void)
+{
+    LCD_Minimal_BacklightSet(GPIO_PIN_RESET);
 }
