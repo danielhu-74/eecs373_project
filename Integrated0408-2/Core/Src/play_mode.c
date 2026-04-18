@@ -7,7 +7,6 @@
 #include "lcd_minimal.h"
 #include "lcd_ui.h"
 #include "mp3_control.h"
-#include "spi.h"
 #include "wii_nunchuk.h"
 #include "game_init.h"
 #include "game_update.h"
@@ -146,12 +145,18 @@ void PlayMode_Enter(PlayModeContext *ctx, GameContext *game)
     Play_BGM(2U, 1U);
 }
 
+void PlayMode_Redraw(PlayModeContext *ctx, const GameContext *game)
+{
+    if (ctx == NULL || game == NULL || ctx->active == 0U) {
+        return;
+    }
+
+    ctx->scoreboard_drawn = 0U;
+    (void)play_mode_render_scoreboard(ctx, game);
+}
+
 PlayModeEvent PlayMode_Process(PlayModeContext *ctx, GameContext *game)
 {
-    PlayerData p1_data;
-    PlayerData p2_data;
-    ShuttlecockData shuttle_data;
-
     if (ctx == NULL || game == NULL) {
         return PLAY_MODE_EVENT_NONE;
     }
@@ -179,19 +184,6 @@ PlayModeEvent PlayMode_Process(PlayModeContext *ctx, GameContext *game)
         ctx->last_p2_score != game->p2.score) {
         (void)play_mode_render_scoreboard(ctx, game);
     }
-
-    p1_data.x = (uint16_t)game->p1.x;
-    p1_data.y = (uint16_t)game->p1.y;
-    p1_data.swing = game->p1.swing;
-
-    p2_data.x = (uint16_t)game->p2.x;
-    p2_data.y = (uint16_t)game->p2.y;
-    p2_data.swing = game->p2.swing;
-
-    shuttle_data.x = (uint16_t)game->shuttle.x;
-    shuttle_data.y = (uint16_t)game->shuttle.y;
-
-    (void)SPI_SendGameState(p1_data, p2_data, shuttle_data);
 
     if (game->gs.state == STATE_GAME_OVER) {
         ctx->active = 0U;

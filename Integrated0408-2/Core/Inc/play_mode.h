@@ -26,6 +26,7 @@ typedef struct
 
 void PlayMode_Init(PlayModeContext *ctx);
 void PlayMode_Enter(PlayModeContext *ctx, GameContext *game);
+void PlayMode_Redraw(PlayModeContext *ctx, const GameContext *game);
 PlayModeEvent PlayMode_Process(PlayModeContext *ctx, GameContext *game);
 
 #ifdef __cplusplus

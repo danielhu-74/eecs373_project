@@ -1,6 +1,5 @@
 #include "ddr_pad.h"
 #include "wii_nunchuk.h"
-#include <stdio.h>
 #define PS2_DATA_PIN  PS2_DATA_Pin
 #define PS2_DATA_PORT PS2_DATA_GPIO_Port
 #define PS2_CMD_PIN   PS2_CMD_Pin
@@ -79,7 +78,6 @@ void PS2_ReadPad() {
 	PS2_Exchange(0x00);          // 此时跳舞毯回 0x5A
 	ps2_data[0] = PS2_Exchange(0x00); // 按键数据 Byte 1 (左下右上等)
 	ps2_data[1] = PS2_Exchange(0x00); // 按键数据 Byte 2 (对角线按键)
-    printf("%d,%d\r\n",ps2_data[0],ps2_data[1]);
 
 	// 3. 结束通讯
 	HAL_GPIO_WritePin(PS2_ATTN_GPIO_Port, PS2_ATTN_Pin, GPIO_PIN_SET);
@@ -97,7 +95,6 @@ void PS2_ReadPad_P2() {
 	PS2_SwapByte_Pad2(0x00);          // 此时跳舞毯回 0x5A
     player2_data[0] = PS2_SwapByte_Pad2(0x00); // 按键数据 Byte 1 (左下右上等)
     player2_data[1] = PS2_SwapByte_Pad2(0x00); // 按键数据 Byte 2 (对角线按键)
-    printf("%d,%d\r\n",player2_data[0],player2_data[1]);
 
 	// 3. 结束通讯
 	HAL_GPIO_WritePin(DDR2_ATT_GPIO_Port, DDR2_ATT_Pin, GPIO_PIN_SET);
@@ -109,102 +106,74 @@ void process_Pad(Player *player){
     // 逻辑解析：PS2 协议中 0 代表按下，1 代表松开
     // 我们用取反 (!) 来让 1 代表按下，方便观察
     uint8_t btn_data1 = ~ps2_data[0];
-
-
-
     uint8_t up    = (btn_data1 >> 4) & 0x01;
-    uint8_t right = (btn_data1 >> 5) & 0x01;
     uint8_t down  = (btn_data1 >> 6) & 0x01;
-    uint8_t left  = (btn_data1 >> 7) & 0x01;
-    uint8_t start = (btn_data1 >> 3) & 0x01;
-
-
 
     if (player->side == SIDE_LEFT){
         if (up) {
-        	player->move_right = 1;
-        	player->move_left = 0;
+            player->move_right = 1;
+            player->move_left = 0;
         }
         else if (down) {
-        	player->move_right = 0;
-        	player->move_left = 1;
+            player->move_right = 0;
+            player->move_left = 1;
         }
         else{
-        	player->move_right = 0;
-        	player->move_left = 0;
+            player->move_right = 0;
+            player->move_left = 0;
         }
     }
     else{
-    	if (up) {
-			player->move_right = 0;
-			player->move_left = 1;
-		}
-		else if (down) {
-			player->move_right = 1;
-			player->move_left = 0;
-		}
-		else{
-			player->move_right = 0;
-			player->move_left = 0;
-		}
+        if (up) {
+            player->move_right = 0;
+            player->move_left = 1;
+        }
+        else if (down) {
+            player->move_right = 1;
+            player->move_left = 0;
+        }
+        else{
+            player->move_right = 0;
+            player->move_left = 0;
+        }
     }
-
-    printf("U:%d D:%d L:%d R:%d ST:%d\r\n", up, down, left, right, start);
-//    HAL_Delay(100);
 }
 
-
-
 void process_Pad_P2(Player *player){
-	PS2_ReadPad_P2();
+    PS2_ReadPad_P2();
 
     // 逻辑解析：PS2 协议中 0 代表按下，1 代表松开
     // 我们用取反 (!) 来让 1 代表按下，方便观察
     uint8_t btn_data1 = ~player2_data[0];
-
-
-
     uint8_t up    = (btn_data1 >> 4) & 0x01;
-    uint8_t right = (btn_data1 >> 5) & 0x01;
     uint8_t down  = (btn_data1 >> 6) & 0x01;
-    uint8_t left  = (btn_data1 >> 7) & 0x01;
-    uint8_t start = (btn_data1 >> 3) & 0x01;
-
-
 
     if (player->side == SIDE_LEFT){
         if (up) {
-        	player->move_right = 1;
-        	player->move_left = 0;
+            player->move_right = 1;
+            player->move_left = 0;
         }
         else if (down) {
-        	player->move_right = 0;
-        	player->move_left = 1;
+            player->move_right = 0;
+            player->move_left = 1;
         }
         else{
-        	player->move_right = 0;
-        	player->move_left = 0;
+            player->move_right = 0;
+            player->move_left = 0;
         }
     }
     else{
-    	if (up) {
-			player->move_right = 0;
-			player->move_left = 1;
-		}
-		else if (down) {
-			player->move_right = 1;
-			player->move_left = 0;
-		}
-		else{
-			player->move_right = 0;
-			player->move_left = 0;
-		}
+        if (up) {
+            player->move_right = 0;
+            player->move_left = 1;
+        }
+        else if (down) {
+            player->move_right = 1;
+            player->move_left = 0;
+        }
+        else{
+            player->move_right = 0;
+            player->move_left = 0;
+        }
     }
-    
-    printf("Player2: U:%d D:%d L:%d R:%d ST:%d\r\n", up, down, left, right, start);
-//    HAL_Delay(100);
 }
-
-
-
-

@@ -11,8 +11,14 @@
 #include "game_types.h"
 #include "main.h"
 
-//static uint8_t calc_checksum(const uint8_t *data, uint16_t len);
-HAL_StatusTypeDef SPI_SendGameState(PlayerData p1, PlayerData p2, ShuttlecockData sc);
+#define SPI_DISPLAY_MODE_BLANK  0U
+#define SPI_DISPLAY_MODE_PLAY   1U
+#define SPI_DISPLAY_MODE_PAUSE  2U
+
+HAL_StatusTypeDef SPI_SendGameState(PlayerData p1,
+                                    PlayerData p2,
+                                    ShuttlecockData sc,
+                                    uint8_t display_mode);
 
 
 #endif /* INC_SPI_H_ */

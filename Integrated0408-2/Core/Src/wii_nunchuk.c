@@ -1,198 +1,179 @@
-#include "game_types.h"
-#include "main.h"
-#include <stdio.h>
-#include <math.h>
+#include "wii_nunchuk.h"
+
 #include <stdlib.h>
 
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c2;
 extern uint8_t nunchuk_data1[6];
 extern uint8_t nunchuk_data2[6];
-static uint16_t last_acc_z1 = 712; // 初始值给个大概就行，运行一次后就会自动同步
-static uint16_t last_acc_z2 = 712; // 初始值给个大概就行，运行一次后就会自动同步
+
+static uint16_t last_acc_z1 = 712U;
+static uint16_t last_acc_z2 = 712U;
 static int cooldown_timer1 = 0;
 static int cooldown_timer2 = 0;
 
-
-// 差值阈值：这决定了你需要多“猛”的发力才能触发。
-// 因为差值过滤了重力，这个值通常可以设小一点，比如 40 ~ 80
 const int SWING_THRESHOLD = 60;
 const int COOLDOWN_CYCLES = 10;
 
-void nunchuk_init(void) {
+static HAL_StatusTypeDef nunchuk_read_raw(I2C_HandleTypeDef *hi2c, uint8_t *buffer)
+{
+    uint8_t request_data = 0x00;
+    HAL_StatusTypeDef status;
+
+    status = HAL_I2C_Master_Transmit(hi2c, NUNCHUK_ADDR, &request_data, 1, 100);
+    if (status != HAL_OK) {
+        return status;
+    }
+
+    HAL_Delay(2);
+    return HAL_I2C_Master_Receive(hi2c, NUNCHUK_ADDR, buffer, 6, 100);
+}
+
+static HAL_StatusTypeDef nunchuk_read_p1(void)
+{
+    return nunchuk_read_raw(&hi2c1, nunchuk_data1);
+}
+
+static HAL_StatusTypeDef nunchuk_read_p2(void)
+{
+    return nunchuk_read_raw(&hi2c2, nunchuk_data2);
+}
+
+static void nunchuk_decode_buttons(const uint8_t *buffer, NunchukButtonsState *state)
+{
+    if (buffer == NULL || state == NULL) {
+        return;
+    }
+
+    state->z_pressed = ((buffer[5] & 0x01U) == 0U) ? 1U : 0U;
+    state->c_pressed = ((buffer[5] & 0x02U) == 0U) ? 1U : 0U;
+}
+
+void nunchuk_init(void)
+{
     uint8_t init_data1[2] = {0xF0, 0x55};
     uint8_t init_data2[2] = {0xFB, 0x00};
 
-    // 发送初始化指令
     HAL_I2C_Master_Transmit(&hi2c1, NUNCHUK_ADDR, init_data1, 2, 100);
     HAL_Delay(10);
     HAL_I2C_Master_Transmit(&hi2c1, NUNCHUK_ADDR, init_data2, 2, 100);
     HAL_Delay(10);
+
     HAL_I2C_Master_Transmit(&hi2c2, NUNCHUK_ADDR, init_data1, 2, 100);
     HAL_Delay(10);
     HAL_I2C_Master_Transmit(&hi2c2, NUNCHUK_ADDR, init_data2, 2, 100);
     HAL_Delay(10);
 }
 
-
-
-
-
-// 2. 读取 6 字节数据
-void nunchuk_read_p1(void) {
-    uint8_t request_data = 0x00;
-
-    // 每次读取前，都要向手柄写入一个 0x00，告诉它“把数据指针指回开头”
-    HAL_I2C_Master_Transmit(&hi2c1, NUNCHUK_ADDR, &request_data, 1, 100);
-
-    // 给手柄一点点时间准备数据
-    HAL_Delay(2);
-
-    // 连续读取 6 个字节
-    HAL_I2C_Master_Receive(&hi2c1, NUNCHUK_ADDR, nunchuk_data1, 6, 100);
-}
-
-// 2. 读取 P2 的数据
-void nunchuk_read_p2(void) {
-    uint8_t request_data = 0x00;
-
+HAL_StatusTypeDef Nunchuk_ReadButtonsP1(NunchukButtonsState *state)
+{
     HAL_StatusTypeDef status;
 
-	// 1. Check the pointer reset
-	status = HAL_I2C_Master_Transmit(&hi2c2, NUNCHUK_ADDR, &request_data, 1, 100);
-	if (status != HAL_OK) {
-		printf("P2 Transmit Error: %d\r\n", status);
-		return; // Stop here if we can't even talk to it
-	}
+    if (state == NULL) {
+        return HAL_ERROR;
+    }
 
-	HAL_Delay(2);
+    status = nunchuk_read_p1();
+    if (status != HAL_OK) {
+        state->c_pressed = 0U;
+        state->z_pressed = 0U;
+        return status;
+    }
 
-	// 2. Check the data receive
-	status = HAL_I2C_Master_Receive(&hi2c2, NUNCHUK_ADDR, nunchuk_data2, 6, 100);
-	if (status != HAL_OK) {
-		printf("P2 Receive Error: %d\r\n", status);
-	}
+    nunchuk_decode_buttons(nunchuk_data1, state);
+    return HAL_OK;
 }
 
-void process_nunchuk_p1(Player *player){
+HAL_StatusTypeDef Nunchuk_ReadButtonsP2(NunchukButtonsState *state)
+{
+    HAL_StatusTypeDef status;
 
-    nunchuk_read_p1();
+    if (state == NULL) {
+        return HAL_ERROR;
+    }
 
-    uint16_t accel_z = (nunchuk_data1[4] << 2) | ((nunchuk_data1[5] >> 6) & 0x03);
+    status = nunchuk_read_p2();
+    if (status != HAL_OK) {
+        state->c_pressed = 0U;
+        state->z_pressed = 0U;
+        return status;
+    }
 
-    // ---------------------------------------------------------
-    // 3. 动作识别 (瞬间速度差 Delta)
-    // ---------------------------------------------------------
-    // 计算当前时刻与上一个时刻的差值 (极其关键：这是动态加速度，去除了重力影响)
-    int16_t dz = accel_z - last_acc_z1;
-    int16_t abs_dz = abs(dz);
-    char current_action[50] = "Preparing";
+    nunchuk_decode_buttons(nunchuk_data2, state);
+    return HAL_OK;
+}
+
+void process_nunchuk_p1(Player *player)
+{
+    uint16_t accel_z;
+    int16_t dz;
+    int16_t abs_dz;
+
+    if (player == NULL || nunchuk_read_p1() != HAL_OK) {
+        return;
+    }
+
+    accel_z = (uint16_t)((nunchuk_data1[4] << 2) | ((nunchuk_data1[5] >> 6) & 0x03U));
+    dz = (int16_t)(accel_z - last_acc_z1);
+    abs_dz = (int16_t)abs(dz);
 
     if (cooldown_timer1 > 0) {
         cooldown_timer1--;
         if (cooldown_timer1 == 0) {
-            sprintf(current_action, "Still");
             player->swing = false;
         }
-    }
-    else {
-        // 只有瞬间的变化量极大，才认为是挥动
-        if (abs_dz > SWING_THRESHOLD) {
-            if (dz > SWING_THRESHOLD) {
-                sprintf(current_action, "Moving up");
-                cooldown_timer1 = COOLDOWN_CYCLES;
-                player->swing = true;
-                if (player->side == SIDE_LEFT){
-                    player->mx = HITTING_SPEED_X;
-                }
-                else{
-                    player->mx = -HITTING_SPEED_X;
-                }     
-                player->my = HITTING_SPEED_Y;
+    } else if (abs_dz > SWING_THRESHOLD) {
+        if (dz > SWING_THRESHOLD) {
+            cooldown_timer1 = COOLDOWN_CYCLES;
+            player->swing = true;
+            if (player->side == SIDE_LEFT) {
+                player->mx = HITTING_SPEED_X;
+            } else {
+                player->mx = -HITTING_SPEED_X;
             }
-            else if (dz < -SWING_THRESHOLD) {
-                sprintf(current_action, "Moving down");
-                cooldown_timer1 = COOLDOWN_CYCLES;
-//                player->swing = true;
-//                if (player->side == SIDE_RIGHT){
-//                    player->mx = 0.707;
-//                }
-//                else{
-//                    player->mx = -0.707;
-//                }
-//                player->my = -0.707;
-            }
+            player->my = HITTING_SPEED_Y;
+        } else if (dz < -SWING_THRESHOLD) {
+            cooldown_timer1 = COOLDOWN_CYCLES;
         }
     }
 
-    // 必须更新：把现在的状态变成“过去”，给下一次循环使用
     last_acc_z1 = accel_z;
-
-    // 4. 打印输出
-   //printf("dz:%5d | Action: %s \r\n", dz, current_action);
-
-//    HAL_Delay(1);
-
 }
 
-void process_nunchuk_p2(Player *player){
+void process_nunchuk_p2(Player *player)
+{
+    uint16_t accel_z;
+    int16_t dz;
+    int16_t abs_dz;
 
-    nunchuk_read_p2();
+    if (player == NULL || nunchuk_read_p2() != HAL_OK) {
+        return;
+    }
 
-    uint16_t accel_z = (nunchuk_data2[4] << 2) | ((nunchuk_data2[5] >> 6) & 0x03);
-
-    // ---------------------------------------------------------
-    // 3. 动作识别 (瞬间速度差 Delta)
-    // ---------------------------------------------------------
-    // 计算当前时刻与上一个时刻的差值 (极其关键：这是动态加速度，去除了重力影响)
-    int16_t dz = accel_z - last_acc_z2;
-    int16_t abs_dz = abs(dz);
-    char current_action[50] = "Preparing";
+    accel_z = (uint16_t)((nunchuk_data2[4] << 2) | ((nunchuk_data2[5] >> 6) & 0x03U));
+    dz = (int16_t)(accel_z - last_acc_z2);
+    abs_dz = (int16_t)abs(dz);
 
     if (cooldown_timer2 > 0) {
         cooldown_timer2--;
         if (cooldown_timer2 == 0) {
-            sprintf(current_action, "Still");
             player->swing = false;
         }
-    }
-    else {
-        // 只有瞬间的变化量极大，才认为是挥动
-        if (abs_dz > SWING_THRESHOLD) {
-            if (dz > SWING_THRESHOLD) {
-                sprintf(current_action, "Moving up");
-                cooldown_timer2 = COOLDOWN_CYCLES;
-                player->swing = true;
-                if (player->side == SIDE_LEFT){
-                    player->mx = HITTING_SPEED_X;
-                }
-                else{
-                    player->mx = -HITTING_SPEED_X;
-                }
-                player->my = HITTING_SPEED_Y;
+    } else if (abs_dz > SWING_THRESHOLD) {
+        if (dz > SWING_THRESHOLD) {
+            cooldown_timer2 = COOLDOWN_CYCLES;
+            player->swing = true;
+            if (player->side == SIDE_LEFT) {
+                player->mx = HITTING_SPEED_X;
+            } else {
+                player->mx = -HITTING_SPEED_X;
             }
-            else if (dz < -SWING_THRESHOLD) {
-                sprintf(current_action, "Moving down");
-                cooldown_timer2 = COOLDOWN_CYCLES;
-                //player->swing = true;
-//                if (player->side == SIDE_RIGHT){
-//                    player->mx = 0.707;
-//                }
-//                else{
-//                    player->mx = -0.707;
-//                }
-                player->my = -0.707;
-            }
+            player->my = HITTING_SPEED_Y;
+        } else if (dz < -SWING_THRESHOLD) {
+            cooldown_timer2 = COOLDOWN_CYCLES;
+            player->my = -0.707f;
         }
     }
 
-    // 必须更新：把现在的状态变成“过去”，给下一次循环使用
     last_acc_z2 = accel_z;
-
-    // 4. 打印输出
-    printf("dz:%5d | Action: %s \r\n", dz, current_action);
-
-//    HAL_Delay(1);
-
 }
-

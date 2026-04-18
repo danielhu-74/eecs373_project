@@ -14,6 +14,7 @@ module spi_rx_game (
     output reg [15:0] ball_y_shadow = 16'd220,
     output reg        p1_swing_shadow = 1'b0,
     output reg        p2_swing_shadow = 1'b0,
+    output reg [2:0]  display_mode_shadow = 3'd0,
     output reg        commit_toggle = 1'b0
 );
 
@@ -45,7 +46,7 @@ module spi_rx_game (
 
     // ---------------- byte rx ----------------
     wire [7:0] byte_data;
-//    wire       byte_valid;
+    wire       byte_valid;
 
     spi_byte_rx u_rx (
         .clk(clk),
@@ -91,11 +92,13 @@ module spi_rx_game (
 //                    payload_ok <= 1;
                 end
                 12: begin
-                    // Suggested state byte layout:
+                    // State byte layout:
                     //   bit 0: p1_swing
                     //   bit 1: p2_swing
+                    //   bits 4:2: display_mode
                     p1_swing_shadow <= byte_data[0];
                     p2_swing_shadow <= byte_data[1];
+                    display_mode_shadow <= byte_data[4:2];
                     payload_ok <= 1;
                 end
 

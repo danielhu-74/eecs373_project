@@ -41,6 +41,10 @@ localparam P1_Y = 16'd336;
 localparam P2_X = 16'd522;
 localparam P2_Y = 16'd336;
 
+localparam [2:0] DISPLAY_MODE_BLANK = 3'd0;
+localparam [2:0] DISPLAY_MODE_PLAY  = 3'd1;
+localparam [2:0] DISPLAY_MODE_PAUSE = 3'd2;
+
 reg [9:0] hcounter = 10'd0;
 reg [9:0] vcounter = 10'd0;
 
@@ -83,6 +87,7 @@ wire [15:0] ball_y_shadow;
 wire        commit_toggle_spi;
 wire p1_swing_shadow;
 wire p2_swing_shadow;
+wire [2:0] display_mode_shadow;
 
 
 
@@ -99,6 +104,7 @@ spi_rx_game u_spi (
     .ball_y_shadow(ball_y_shadow),
     .p1_swing_shadow(p1_swing_shadow),
     .p2_swing_shadow(p2_swing_shadow),
+    .display_mode_shadow(display_mode_shadow),
     .commit_toggle(commit_toggle_spi)
 );
 
@@ -130,6 +136,7 @@ reg [15:0] ball_y = 16'd220;
 
 reg p1_swing = 1'b0;
 reg p2_swing = 1'b0;
+reg [2:0] display_mode = DISPLAY_MODE_BLANK;
 
 always @(posedge clk) begin
     if (new_commit) begin
@@ -141,6 +148,7 @@ always @(posedge clk) begin
         ball_y <= ball_y_shadow;
         p1_swing <= p1_swing_shadow;
         p2_swing <= p2_swing_shadow;
+        display_mode <= display_mode_shadow;
     end
 end
 
@@ -266,20 +274,50 @@ always @(posedge clk) begin
     y_q <= y;
 end
 
+wire show_playfield = (display_mode == DISPLAY_MODE_PLAY) || (display_mode == DISPLAY_MODE_PAUSE);
+
+wire pause_panel_outer = active_area_q &&
+                         (display_mode == DISPLAY_MODE_PAUSE) &&
+                         (x_q >= 10'd155) && (x_q < 10'd475) &&
+                         (y_q >= 10'd96)  && (y_q < 10'd388);
+wire pause_panel_inner = active_area_q &&
+                         (display_mode == DISPLAY_MODE_PAUSE) &&
+                         (x_q >= 10'd159) && (x_q < 10'd471) &&
+                         (y_q >= 10'd100) && (y_q < 10'd384);
+wire pause_title_band = pause_panel_inner &&
+                        (y_q >= 10'd118) && (y_q < 10'd190);
+wire pause_resume_button = pause_panel_inner &&
+                           (x_q >= 10'd215) && (x_q < 10'd415) &&
+                           (y_q >= 10'd220) && (y_q < 10'd265);
+wire pause_restart_button = pause_panel_inner &&
+                            (x_q >= 10'd215) && (x_q < 10'd415) &&
+                            (y_q >= 10'd295) && (y_q < 10'd340);
+wire pause_icon_bar_left = pause_title_band &&
+                           (x_q >= 10'd288) && (x_q < 10'd304) &&
+                           (y_q >= 10'd130) && (y_q < 10'd176);
+wire pause_icon_bar_right = pause_title_band &&
+                            (x_q >= 10'd326) && (x_q < 10'd342) &&
+                            (y_q >= 10'd130) && (y_q < 10'd176);
+wire [9:0] resume_dx = (x_q >= 10'd286) ? (x_q - 10'd286) : 10'd0;
+wire pause_resume_icon = pause_resume_button &&
+                         (x_q >= 10'd286) && (x_q < 10'd326) &&
+                         (y_q >= (10'd243 - (resume_dx >> 1))) &&
+                         (y_q <= (10'd243 + (resume_dx >> 1)));
+wire pause_restart_icon = pause_restart_button && (
+                         ((x_q >= 10'd292) && (x_q < 10'd324) && (y_q >= 10'd307) && (y_q < 10'd311)) ||
+                         ((x_q >= 10'd288) && (x_q < 10'd292) && (y_q >= 10'd307) && (y_q < 10'd327)) ||
+                         ((x_q >= 10'd292) && (x_q < 10'd318) && (y_q >= 10'd323) && (y_q < 10'd327)) ||
+                         ((x_q >= 10'd280) && (x_q < 10'd292) && (y_q >= 10'd299) && (y_q < 10'd303)) ||
+                         ((x_q >= 10'd280) && (x_q < 10'd284) && (y_q >= 10'd299) && (y_q < 10'd315))
+                        );
+
 
 always @(*) begin
     {red_msb, red_lsb}   = 2'd0;
     {green_msb, green_lsb} = 2'd0;
     {blue_msb, blue_lsb}   = 2'd0;
 
-    if (active_area) begin
-        
-        if (active_area_q) begin
-        // 1. Check for the "Commit" indicator (Top left square)
-//            if (x_q < 20 && y_q < 20 && (commit_seen != 0)) begin
-//                {red_msb, red_lsb} = 1'b1;
-//            end 
-            // 2. Draw Game Objects (Priority Layer)
+    if (active_area && active_area_q && show_playfield) begin
             if (ball_on_q) begin
                 {red_msb, red_lsb} = 2'd3;
                 {green_msb, green_lsb} = 2'd2;
@@ -291,11 +329,6 @@ always @(*) begin
             else if (p2_on_q) begin
                 {red_msb, red_lsb, green_msb, green_lsb, blue_msb, blue_lsb} = p2_rgb;
             end 
-            else if (ball_on_q) begin
-                {red_msb, red_lsb} = 2'd3;
-                {green_msb, green_lsb} = 2'd2;
-                {blue_msb, blue_lsb}  = 2'd0;
-            end
             else if (net_on_q) begin
                 {red_msb, red_lsb} = 2'd0;
                 {green_msb, green_lsb} = 2'd0;
@@ -316,8 +349,40 @@ always @(*) begin
                 {green_msb, green_lsb} = 2'd1;
                 {blue_msb, blue_lsb} = 2'd0;  
             end
-            
-        end
+
+            if (display_mode == DISPLAY_MODE_PAUSE) begin
+                if (pause_panel_outer && !pause_panel_inner) begin
+                    {red_msb, red_lsb} = 2'd3;
+                    {green_msb, green_lsb} = 2'd3;
+                    {blue_msb, blue_lsb} = 2'd3;
+                end
+                else if (pause_icon_bar_left || pause_icon_bar_right ||
+                         pause_resume_icon || pause_restart_icon) begin
+                    {red_msb, red_lsb} = 2'd3;
+                    {green_msb, green_lsb} = 2'd3;
+                    {blue_msb, blue_lsb} = 2'd3;
+                end
+                else if (pause_resume_button) begin
+                    {red_msb, red_lsb} = 2'd0;
+                    {green_msb, green_lsb} = 2'd3;
+                    {blue_msb, blue_lsb} = 2'd0;
+                end
+                else if (pause_restart_button) begin
+                    {red_msb, red_lsb} = 2'd3;
+                    {green_msb, green_lsb} = 2'd0;
+                    {blue_msb, blue_lsb} = 2'd0;
+                end
+                else if (pause_title_band) begin
+                    {red_msb, red_lsb} = 2'd1;
+                    {green_msb, green_lsb} = 2'd1;
+                    {blue_msb, blue_lsb} = 2'd1;
+                end
+                else if (pause_panel_inner) begin
+                    {red_msb, red_lsb} = 2'd0;
+                    {green_msb, green_lsb} = 2'd0;
+                    {blue_msb, blue_lsb} = 2'd0;
+                end
+            end
     end
 end
 
