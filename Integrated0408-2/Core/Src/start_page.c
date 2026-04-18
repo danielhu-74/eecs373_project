@@ -191,6 +191,22 @@ static HAL_StatusTypeDef start_page_render_prompt(uint16_t center_x,
                                    prompt_brightness);
 }
 
+static HAL_StatusTypeDef start_page_draw_prompt_in_place(uint16_t center_x,
+                                                         uint8_t ready,
+                                                         uint8_t prompt_brightness)
+{
+    const char *prompt_text = (ready != 0U) ? "TAP TO QUIT" : "TAP TO START";
+    uint16_t prompt_y = (ready != 0U) ? 204U : 150U;
+
+    return LCD_UI_DrawTextCentered(center_x,
+                                   prompt_y,
+                                   prompt_text,
+                                   START_ACTION_SCALE,
+                                   prompt_brightness,
+                                   prompt_brightness,
+                                   prompt_brightness);
+}
+
 static HAL_StatusTypeDef start_page_render(const StartPageContext *ctx)
 {
     HAL_StatusTypeDef status;
@@ -230,12 +246,12 @@ static void start_page_update_prompt_animation(StartPageContext *ctx, uint32_t n
     }
 
     ctx->prompt_brightness = prompt_brightness;
-    (void)start_page_render_prompt((uint16_t)START_LEFT_CENTER_X,
-                                   ctx->p1_ready,
-                                   prompt_brightness);
-    (void)start_page_render_prompt((uint16_t)START_RIGHT_CENTER_X,
-                                   ctx->p2_ready,
-                                   prompt_brightness);
+    (void)start_page_draw_prompt_in_place((uint16_t)START_LEFT_CENTER_X,
+                                          ctx->p1_ready,
+                                          prompt_brightness);
+    (void)start_page_draw_prompt_in_place((uint16_t)START_RIGHT_CENTER_X,
+                                          ctx->p2_ready,
+                                          prompt_brightness);
 }
 
 static void start_page_seed_touch_latch(StartPageContext *ctx)
