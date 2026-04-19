@@ -18,7 +18,7 @@
 #define SWING_VY_BASE_Q8  -900
 #define MIN_REBOUND_VX_Q8  768
 #define MAX_SCORE          7
-#define PADDLE_SPEED       3
+#define PADDLE_SPEED       2
 #define NUNCHUK_ADDR 0xA4
 
 

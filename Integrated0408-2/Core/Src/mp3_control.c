@@ -44,6 +44,33 @@ void Play_SFX(uint8_t folder, uint8_t file)
     MP3_Send_Cmd(folder, file);
 }
 
+
+//void MP3_ProcessPlaybackState(void)
+//{
+//    // Use a local copy to prevent race conditions
+//    if (mp3_finished_flag != 0U)
+//    {
+//        // Small delay to let hardware stabilize
+//        // (Ensures the Busy pin didn't just 'glitch' during a command)
+//        HAL_Delay(50);
+//
+//        // Final check: Is the pin still High (Idle)?
+//        if (HAL_GPIO_ReadPin(GPIOG, GPIO_PIN_1) == GPIO_PIN_SET)
+//        {
+//            mp3_finished_flag = 0U;
+//            is_playing_sfx = 0U; // Always revert to BGM state
+//            MP3_Send_Cmd(current_bgm_folder, current_bgm_file);
+//        }
+//        else
+//        {
+//            // The pin went low again (meaning a track started), clear flag
+//            mp3_finished_flag = 0U;
+//        }
+//    }
+//}
+
+
+
 void MP3_ProcessPlaybackState(void)
 {
     if (mp3_finished_flag == 0U) {

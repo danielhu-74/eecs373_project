@@ -102,13 +102,17 @@ void resolve_paddle_hit(Shuttlecock *s, Player *p, bool swung, float mx, float m
 /* ============================================================
  * serve_launch / handle_serve_state (encapsulated per earlier refactor)
  * ============================================================ */
-void serve_launch(GameContext *ctx, PlayerSide server)
+void serve_launch(GameContext *ctx, PlayerSide server, Player *srv)
 {
     Shuttlecock *s   = &ctx->shuttle;
-    Player *p = (server == SIDE_LEFT) ? &ctx->p1 : &ctx->p2;
-    int16_t      dir = (server == SIDE_LEFT) ? 1 : -1;
-    s->vx_q8   = dir * p->mx;
-    s->vy_q8   = p->my;
+
+    if (srv->side == SIDE_RIGHT && srv->mx > 0){
+    	srv->mx = -srv->mx;
+    }
+    s->vx_q8   = srv->mx;
+    s->vy_q8   = srv->my;
+
+
     s->in_play = true;
     ctx->gs.state = STATE_PLAYING;
     Play_SFX(1, 5);
@@ -119,7 +123,7 @@ void handle_serve_state(GameContext *ctx)
     PlayerSide server  = ctx->gs.last_scorer;
     Player    *srv     = (server == SIDE_LEFT) ? &ctx->p1 : &ctx->p2;
     if (srv->swing){
-        serve_launch(ctx, server);
+        serve_launch(ctx, server, srv);
     }
 
 }

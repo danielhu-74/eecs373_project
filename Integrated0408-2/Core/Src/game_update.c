@@ -53,15 +53,14 @@ void game_update(GameContext *ctx)
     if (collision_shuttle_net(s, &ctx->net)) {
         PlayerSide loser = (s->vx_q8 > 0) ? SIDE_LEFT : SIDE_RIGHT;
         game_score_point(ctx, loser == SIDE_LEFT ? SIDE_RIGHT : SIDE_LEFT);
-        HAL_Delay(500);
-        Play_SFX(1, 4);
+        //Play_SFX(1, 4);
         return;
     }
 
     /* Paddle hits */
     if (collision_shuttle_paddle(s, &ctx->p1)){
         //printf("player1 swung? %d\n", ctx->p1.swing);
-        resolve_paddle_hit(s, &ctx->p1, ctx->p1.swing, ctx->p1.mx, ctx->p1.my);
+        resolve_paddle_hit(s, &ctx->p1, ctx->p1.swing, ctx->p1.mx, ctx->p2.my);
     }
 
     if (collision_shuttle_paddle(s, &ctx->p2)){
@@ -74,15 +73,16 @@ void game_update(GameContext *ctx)
     if (collision_shuttle_floor(s)) {
         PlayerSide loser = (s->x < ctx->net.x) ? SIDE_LEFT : SIDE_RIGHT;
         game_score_point(ctx, loser == SIDE_LEFT ? SIDE_RIGHT : SIDE_LEFT);
-        Play_SFX(1, 4);
+        //Play_SFX(1, 4);
+        //HAL_Delay(500);
         return;
     }
 
     /* Walls */
     PlayerSide wall_side;
     if (collision_shuttle_wall(s, &wall_side)) {
-        game_score_point(ctx, wall_side == SIDE_LEFT ? SIDE_RIGHT : SIDE_LEFT);
-        Play_SFX(1, 4);
+        game_score_point(ctx, wall_side == SIDE_LEFT ? SIDE_LEFT : SIDE_RIGHT);
+        //Play_SFX(1, 4);
         return;
     }
 

@@ -807,7 +807,7 @@ void EXTI1_IRQHandler(void) {
 // 中断回调函数：当 BUSY 引脚变高时执行
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == GPIO_PIN_1) {
-        mp3_finished_flag = 1; // 竖起“播完了”的旗帜
+        mp3_finished_flag = 1U; // 竖起“播完了”的旗帜
     }
 }
 

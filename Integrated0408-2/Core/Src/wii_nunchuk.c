@@ -23,7 +23,7 @@ const int COOLDOWN_CYCLES = 10;
 #define SWING_PEAK_DECAY             10U
 #define SWING_POWER_MAX_DZ           220U
 #define SWING_POWER_MIN_PERCENT      85U
-#define SWING_POWER_MAX_PERCENT      185U
+#define SWING_POWER_MAX_PERCENT      125U
 
 static HAL_StatusTypeDef nunchuk_read_raw(I2C_HandleTypeDef *hi2c, uint8_t *buffer)
 {

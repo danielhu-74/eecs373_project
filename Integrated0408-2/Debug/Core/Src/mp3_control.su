@@ -2,4 +2,4 @@
 ../Core/Src/mp3_control.c:17:6:Manual_MP3_INT_Init	40	static
 ../Core/Src/mp3_control.c:33:6:Play_BGM	16	static
 ../Core/Src/mp3_control.c:41:6:Play_SFX	16	static
-../Core/Src/mp3_control.c:47:6:MP3_ProcessPlaybackState	8	static
+../Core/Src/mp3_control.c:74:6:MP3_ProcessPlaybackState	8	static
