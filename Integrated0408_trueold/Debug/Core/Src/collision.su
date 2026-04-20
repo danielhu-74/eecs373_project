@@ -1,5 +1,0 @@
-../Core/Src/collision.c:4:6:collision_shuttle_paddle	40	static
-../Core/Src/collision.c:21:6:collision_shuttle_net	24	static
-../Core/Src/collision.c:28:6:collision_shuttle_floor	16	static
-../Core/Src/collision.c:32:6:collision_shuttle_ceiling	16	static
-../Core/Src/collision.c:36:6:collision_shuttle_wall	16	static

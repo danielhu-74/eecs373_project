@@ -1,2 +1,0 @@
-../Core/Src/max7219_board.c:5:19:MAX7219_Board_InitRecommendedSPI3	40	static
-../Core/Src/max7219_board.c:47:6:MAX7219_Board_FillRecommendedSPI3	16	static

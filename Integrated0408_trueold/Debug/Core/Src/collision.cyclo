@@ -1,5 +1,0 @@
-../Core/Src/collision.c:4:6:collision_shuttle_paddle	5
-../Core/Src/collision.c:21:6:collision_shuttle_net	5
-../Core/Src/collision.c:28:6:collision_shuttle_floor	1
-../Core/Src/collision.c:32:6:collision_shuttle_ceiling	1
-../Core/Src/collision.c:36:6:collision_shuttle_wall	3

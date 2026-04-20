@@ -1,8 +1,0 @@
-../Core/Src/lcd_touch_demo.c:98:23:lcd_touch_demo_get_glyph	11
-../Core/Src/lcd_touch_demo.c:127:26:lcd_touch_demo_fill	1
-../Core/Src/lcd_touch_demo.c:134:26:lcd_touch_demo_draw_char	5
-../Core/Src/lcd_touch_demo.c:165:26:lcd_touch_demo_draw_text_centered	5
-../Core/Src/lcd_touch_demo.c:202:26:lcd_touch_demo_draw_button	5
-../Core/Src/lcd_touch_demo.c:260:16:lcd_touch_demo_hit_test	6
-../Core/Src/lcd_touch_demo.c:278:26:lcd_touch_demo_draw_menu	8
-../Core/Src/lcd_touch_demo.c:356:19:LCD_Touch_ColorDemo_Run	11
