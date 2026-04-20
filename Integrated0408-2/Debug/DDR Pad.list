@@ -1901,7 +1901,6 @@ uint8_t PS2_Exchange(uint8_t data) {
 080013f0 <PS2_SwapByte_Pad2>:
 
 
-// 适配第二块跳舞毯的字节交换函数 (PF8, PE6, PE5, PE4)
 uint8_t PS2_SwapByte_Pad2(uint8_t data) {
  80013f0:	b580      	push	{r7, lr}
  80013f2:	b084      	sub	sp, #16
@@ -1915,7 +1914,6 @@ uint8_t PS2_SwapByte_Pad2(uint8_t data) {
  80013fe:	2300      	movs	r3, #0
  8001400:	60bb      	str	r3, [r7, #8]
  8001402:	e031      	b.n	8001468 <PS2_SwapByte_Pad2+0x78>
-        // 1. 设置命令位 (PE6 - CMD)
         HAL_GPIO_WritePin(GPIOE, DDR2_CMD_Pin, (data & (1 << i)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
  8001404:	79fa      	ldrb	r2, [r7, #7]
  8001406:	68bb      	ldr	r3, [r7, #8]
@@ -1928,7 +1926,6 @@ uint8_t PS2_SwapByte_Pad2(uint8_t data) {
  8001418:	4817      	ldr	r0, [pc, #92]	@ (8001478 <PS2_SwapByte_Pad2+0x88>)
  800141a:	f004 fdfd 	bl	8006018 <HAL_GPIO_WritePin>
 
-        // 2. 时钟拉低 (PE4 - CLK)
         HAL_GPIO_WritePin(GPIOE, DDR2_CLK_Pin, GPIO_PIN_RESET);
  800141e:	2200      	movs	r2, #0
  8001420:	2110      	movs	r1, #16
@@ -1938,7 +1935,6 @@ uint8_t PS2_SwapByte_Pad2(uint8_t data) {
  8001428:	200f      	movs	r0, #15
  800142a:	f7ff ff6d 	bl	8001308 <delay_us>
 
-        // 3. 读取数据位 (PF8 - DAT)
         if(HAL_GPIO_ReadPin(GPIOF, DDR2_DAT_Pin) == GPIO_PIN_SET) {
  800142e:	f44f 7180 	mov.w	r1, #256	@ 0x100
  8001432:	4812      	ldr	r0, [pc, #72]	@ (800147c <PS2_SwapByte_Pad2+0x8c>)
@@ -1957,7 +1953,6 @@ uint8_t PS2_SwapByte_Pad2(uint8_t data) {
  8001450:	73fb      	strb	r3, [r7, #15]
         }
 
-        // 4. 时钟拉高 (PE4 - CLK)
         HAL_GPIO_WritePin(GPIOE, DDR2_CLK_Pin, GPIO_PIN_SET);
  8001452:	2201      	movs	r2, #1
  8001454:	2110      	movs	r1, #16
@@ -1990,7 +1985,6 @@ uint8_t PS2_SwapByte_Pad2(uint8_t data) {
 void PS2_ReadPad() {
  8001480:	b580      	push	{r7, lr}
  8001482:	af00      	add	r7, sp, #0
-	// 1. 开始通讯
 	HAL_GPIO_WritePin(PS2_ATTN_GPIO_Port, PS2_ATTN_Pin, GPIO_PIN_RESET);
  8001484:	2200      	movs	r2, #0
  8001486:	2104      	movs	r1, #4
@@ -2000,24 +1994,23 @@ void PS2_ReadPad() {
  8001490:	2014      	movs	r0, #20
  8001492:	f7ff ff39 	bl	8001308 <delay_us>
 
-	// 2. 发送指令序列
-	PS2_Exchange(0x01);          // 帧头
+	PS2_Exchange(0x01);
  8001496:	2001      	movs	r0, #1
  8001498:	f7ff ff5c 	bl	8001354 <PS2_Exchange>
-	PS2_Exchange(0x42); // 请求数据
+	PS2_Exchange(0x42);
  800149c:	2042      	movs	r0, #66	@ 0x42
  800149e:	f7ff ff59 	bl	8001354 <PS2_Exchange>
-	PS2_Exchange(0x00);          // 此时跳舞毯回 0x5A
+	PS2_Exchange(0x00);
  80014a2:	2000      	movs	r0, #0
  80014a4:	f7ff ff56 	bl	8001354 <PS2_Exchange>
-	ps2_data[0] = PS2_Exchange(0x00); // 按键数据 Byte 1 (左下右上等)
+	ps2_data[0] = PS2_Exchange(0x00);
  80014a8:	2000      	movs	r0, #0
  80014aa:	f7ff ff53 	bl	8001354 <PS2_Exchange>
  80014ae:	4603      	mov	r3, r0
  80014b0:	461a      	mov	r2, r3
  80014b2:	4b08      	ldr	r3, [pc, #32]	@ (80014d4 <PS2_ReadPad+0x54>)
  80014b4:	701a      	strb	r2, [r3, #0]
-	ps2_data[1] = PS2_Exchange(0x00); // 按键数据 Byte 2 (对角线按键)
+	ps2_data[1] = PS2_Exchange(0x00);
  80014b6:	2000      	movs	r0, #0
  80014b8:	f7ff ff4c 	bl	8001354 <PS2_Exchange>
  80014bc:	4603      	mov	r3, r0
@@ -2025,7 +2018,6 @@ void PS2_ReadPad() {
  80014c0:	4b04      	ldr	r3, [pc, #16]	@ (80014d4 <PS2_ReadPad+0x54>)
  80014c2:	705a      	strb	r2, [r3, #1]
 
-	// 3. 结束通讯
 	HAL_GPIO_WritePin(PS2_ATTN_GPIO_Port, PS2_ATTN_Pin, GPIO_PIN_SET);
  80014c4:	2201      	movs	r2, #1
  80014c6:	2104      	movs	r1, #4
@@ -2042,7 +2034,6 @@ void PS2_ReadPad() {
 void PS2_ReadPad_P2() {
  80014d8:	b580      	push	{r7, lr}
  80014da:	af00      	add	r7, sp, #0
-	// 1. 开始通讯
 	HAL_GPIO_WritePin(DDR2_ATT_GPIO_Port, DDR2_ATT_Pin, GPIO_PIN_RESET);
  80014dc:	2200      	movs	r2, #0
  80014de:	2120      	movs	r1, #32
@@ -2052,24 +2043,23 @@ void PS2_ReadPad_P2() {
  80014e6:	2014      	movs	r0, #20
  80014e8:	f7ff ff0e 	bl	8001308 <delay_us>
 
-	// 2. 发送指令序列
-	PS2_SwapByte_Pad2(0x01);          // 帧头
+	PS2_SwapByte_Pad2(0x01);
  80014ec:	2001      	movs	r0, #1
  80014ee:	f7ff ff7f 	bl	80013f0 <PS2_SwapByte_Pad2>
-	PS2_SwapByte_Pad2(0x42); // 请求数据
+	PS2_SwapByte_Pad2(0x42);
  80014f2:	2042      	movs	r0, #66	@ 0x42
  80014f4:	f7ff ff7c 	bl	80013f0 <PS2_SwapByte_Pad2>
-	PS2_SwapByte_Pad2(0x00);          // 此时跳舞毯回 0x5A
+	PS2_SwapByte_Pad2(0x00);
  80014f8:	2000      	movs	r0, #0
  80014fa:	f7ff ff79 	bl	80013f0 <PS2_SwapByte_Pad2>
-    player2_data[0] = PS2_SwapByte_Pad2(0x00); // 按键数据 Byte 1 (左下右上等)
+    player2_data[0] = PS2_SwapByte_Pad2(0x00);
  80014fe:	2000      	movs	r0, #0
  8001500:	f7ff ff76 	bl	80013f0 <PS2_SwapByte_Pad2>
  8001504:	4603      	mov	r3, r0
  8001506:	461a      	mov	r2, r3
  8001508:	4b08      	ldr	r3, [pc, #32]	@ (800152c <PS2_ReadPad_P2+0x54>)
  800150a:	701a      	strb	r2, [r3, #0]
-    player2_data[1] = PS2_SwapByte_Pad2(0x00); // 按键数据 Byte 2 (对角线按键)
+    player2_data[1] = PS2_SwapByte_Pad2(0x00);
  800150c:	2000      	movs	r0, #0
  800150e:	f7ff ff6f 	bl	80013f0 <PS2_SwapByte_Pad2>
  8001512:	4603      	mov	r3, r0
@@ -2077,7 +2067,6 @@ void PS2_ReadPad_P2() {
  8001516:	4b05      	ldr	r3, [pc, #20]	@ (800152c <PS2_ReadPad_P2+0x54>)
  8001518:	705a      	strb	r2, [r3, #1]
 
-	// 3. 结束通讯
 	HAL_GPIO_WritePin(DDR2_ATT_GPIO_Port, DDR2_ATT_Pin, GPIO_PIN_SET);
  800151a:	2201      	movs	r2, #1
  800151c:	2120      	movs	r1, #32
@@ -2099,8 +2088,6 @@ void process_Pad(Player *player){
     PS2_ReadPad();
  8001538:	f7ff ffa2 	bl	8001480 <PS2_ReadPad>
 
-    // 逻辑解析：PS2 协议中 0 代表按下，1 代表松开
-    // 我们用取反 (!) 来让 1 代表按下，方便观察
     uint8_t btn_data1 = ~ps2_data[0];
  800153c:	4b26      	ldr	r3, [pc, #152]	@ (80015d8 <process_Pad+0xa8>)
  800153e:	781b      	ldrb	r3, [r3, #0]
@@ -2221,8 +2208,6 @@ void process_Pad_P2(Player *player){
     PS2_ReadPad_P2();
  80015e4:	f7ff ff78 	bl	80014d8 <PS2_ReadPad_P2>
 
-    // 逻辑解析：PS2 协议中 0 代表按下，1 代表松开
-    // 我们用取反 (!) 来让 1 代表按下，方便观察
     uint8_t btn_data1 = ~player2_data[0];
  80015e8:	4b26      	ldr	r3, [pc, #152]	@ (8001684 <process_Pad_P2+0xa8>)
  80015ea:	781b      	ldrb	r3, [r3, #0]
@@ -6435,9 +6420,9 @@ int main(void)
 
   DWT_Init();
  800301e:	f7ff ffd1 	bl	8002fc4 <DWT_Init>
-  nunchuk_init();       // 初始化 P1 手柄
+  nunchuk_init();
  8003022:	f002 fad1 	bl	80055c8 <nunchuk_init>
-  Manual_MP3_INT_Init(); // 激活我们刚才手动写的 PG1 中断配置
+  Manual_MP3_INT_Init();
  8003026:	f000 fc7f 	bl	8003928 <Manual_MP3_INT_Init>
 
   GameApp_Init(&app);
@@ -6666,7 +6651,6 @@ static void MX_I2C1_Init(void)
  800314c:	f000 fbc0 	bl	80038d0 <Error_Handler>
   }
   /* USER CODE BEGIN I2C1_Init 2 */
-  // 1. 初始化第二块跳舞毯的 DAT 引脚 (PF8 - 输入上拉)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
  8003150:	1d3b      	adds	r3, r7, #4
  8003152:	2200      	movs	r2, #0
@@ -6681,7 +6665,7 @@ static void MX_I2C1_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
  8003164:	2300      	movs	r3, #0
  8003166:	60bb      	str	r3, [r7, #8]
-  GPIO_InitStruct.Pull = GPIO_PULLUP; // 极其重要：必须上拉
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
  8003168:	2301      	movs	r3, #1
  800316a:	60fb      	str	r3, [r7, #12]
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
@@ -6690,7 +6674,6 @@ static void MX_I2C1_Init(void)
  8003170:	480f      	ldr	r0, [pc, #60]	@ (80031b0 <MX_I2C1_Init+0xd0>)
  8003172:	f002 fcb5 	bl	8005ae0 <HAL_GPIO_Init>
 
-  // 2. 初始化第二块跳舞毯的 CLK, ATTN, CMD 引脚 (PE4, PE5, PE6 - 推挽输出)
   GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6;
  8003176:	2370      	movs	r3, #112	@ 0x70
  8003178:	607b      	str	r3, [r7, #4]
@@ -6700,7 +6683,7 @@ static void MX_I2C1_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
  800317e:	2300      	movs	r3, #0
  8003180:	60fb      	str	r3, [r7, #12]
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH; // 速度拉满
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
  8003182:	2303      	movs	r3, #3
  8003184:	613b      	str	r3, [r7, #16]
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -6709,7 +6692,6 @@ static void MX_I2C1_Init(void)
  800318a:	480a      	ldr	r0, [pc, #40]	@ (80031b4 <MX_I2C1_Init+0xd4>)
  800318c:	f002 fca8 	bl	8005ae0 <HAL_GPIO_Init>
 
-  // 3. 默认把 ATTN (PE5) 和 CMD, CLK 拉高，处于空闲状态
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6, GPIO_PIN_SET);
  8003190:	2201      	movs	r2, #1
  8003192:	2170      	movs	r1, #112	@ 0x70
@@ -7897,11 +7879,10 @@ PUTCHAR_PROTOTYPE
 
 08003898 <EXTI1_IRQHandler>:
 
-// 硬件中断入口（EXTI Line 1 对应所有 Pin 1）
 void EXTI1_IRQHandler(void) {
  8003898:	b580      	push	{r7, lr}
  800389a:	af00      	add	r7, sp, #0
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1); // 确认是 Pin 1 触发
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
  800389c:	2002      	movs	r0, #2
  800389e:	f002 fbd3 	bl	8006048 <HAL_GPIO_EXTI_IRQHandler>
 }
@@ -7911,7 +7892,6 @@ void EXTI1_IRQHandler(void) {
 
 080038a8 <HAL_GPIO_EXTI_Callback>:
 
-// 中断回调函数：当 BUSY 引脚变高时执行
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  80038a8:	b480      	push	{r7}
  80038aa:	b083      	sub	sp, #12
@@ -7922,7 +7902,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  80038b2:	88fb      	ldrh	r3, [r7, #6]
  80038b4:	2b02      	cmp	r3, #2
  80038b6:	d102      	bne.n	80038be <HAL_GPIO_EXTI_Callback+0x16>
-        mp3_finished_flag = 1U; // 竖起“播完了”的旗帜
+        mp3_finished_flag = 1U;
  80038b8:	4b04      	ldr	r3, [pc, #16]	@ (80038cc <HAL_GPIO_EXTI_Callback+0x24>)
  80038ba:	2201      	movs	r2, #1
  80038bc:	701a      	strb	r2, [r3, #0]

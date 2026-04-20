@@ -52,10 +52,7 @@
 #define PS2_CLK_PIN   PS2_CLK_Pin
 #define PS2_CLK_PORT  PS2_CLK_GPIO_Port
 
-// Wii Nunchuk 的 I2C 7位地址是 0x52
-// STM32 的 HAL 库要求左移 1 位 (8位地址)，所以 0x52 << 1 = 0xA4
 //#define NUNCHUK_ADDR 0xA4
-// 存储按键数据的数组
 uint8_t ps2_data[6];
 uint8_t player2_data[6];
 /* USER CODE END PD */
@@ -75,8 +72,8 @@ UART_HandleTypeDef huart3;
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-uint8_t nunchuk_data1[6]; // 存放读回来的 6 个字节
-uint8_t nunchuk_data2[6]; // 存放读回来的 6 个字节
+uint8_t nunchuk_data1[6];
+uint8_t nunchuk_data2[6];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -145,8 +142,8 @@ int main(void)
   GameAppContext app;
 
   DWT_Init();
-  nunchuk_init();       // 初始化 P1 手柄
-  Manual_MP3_INT_Init(); // 激活我们刚才手动写的 PG1 中断配置
+  nunchuk_init();
+  Manual_MP3_INT_Init();
 
   GameApp_Init(&app);
 
@@ -166,8 +163,6 @@ int main(void)
 //
 //     PS2_ReadPad();
 //
-//     // 逻辑解析：PS2 协议中 0 代表按下，1 代表松开
-//     // 我们用取反 (!) 来让 1 代表按下，方便观察
 //     uint8_t btn_data1 = ~ps2_data[0];
 //
 //     uint8_t up    = (btn_data1 >> 4) & 0x01;
@@ -176,10 +171,9 @@ int main(void)
 //     uint8_t left  = (btn_data1 >> 7) & 0x01;
 //     uint8_t start = (btn_data1 >> 3) & 0x01;
 //
-//     // 调试打印 (如果你开了串口)
 //      printf("U:%d D:%d L:%d R:%d ST:%d\r\n", up, down, left, right, start);
 //
-//     HAL_Delay(16); // 约 60Hz 的刷新率，足够跳舞机使用了
+//     HAL_Delay(16);
 //
 //
 //
@@ -192,13 +186,8 @@ int main(void)
 //     //Wii Start
 //     Nunchuk_Read();
 //
-//             // 解析基础数据
 //             uint16_t accel_z = (nunchuk_data[4] << 2) | ((nunchuk_data[5] >> 6) & 0x03);
 //
-//             // ---------------------------------------------------------
-//             // 3. 动作识别 (瞬间速度差 Delta)
-//             // ---------------------------------------------------------
-//             // 计算当前时刻与上一个时刻的差值 (极其关键：这是动态加速度，去除了重力影响)
 //             int16_t dz = accel_z - last_acc_z;
 //             int16_t abs_dz = abs(dz);
 //
@@ -209,7 +198,6 @@ int main(void)
 //                 }
 //             }
 //             else {
-//                 // 只有瞬间的变化量极大，才认为是挥动
 //                 if (abs_dz > SWING_THRESHOLD) {
 //
 //                     if (dz > SWING_THRESHOLD) {
@@ -223,10 +211,8 @@ int main(void)
 //                 }
 //             }
 //
-//             // 必须更新：把现在的状态变成“过去”，给下一次循环使用
 //             last_acc_z = accel_z;
 //
-//             // 4. 打印输出
 //             printf("dz:%5d | Action: %s \r\n", dz, current_action);
 //
 //             HAL_Delay(50);
@@ -331,21 +317,18 @@ static void MX_I2C1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN I2C1_Init 2 */
-  // 1. 初始化第二块跳舞毯的 DAT 引脚 (PF8 - 输入上拉)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   GPIO_InitStruct.Pin = GPIO_PIN_8;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP; // 极其重要：必须上拉
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  // 2. 初始化第二块跳舞毯的 CLK, ATTN, CMD 引脚 (PE4, PE5, PE6 - 推挽输出)
   GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH; // 速度拉满
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  // 3. 默认把 ATTN (PE5) 和 CMD, CLK 拉高，处于空闲状态
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6, GPIO_PIN_SET);
 
   /* USER CODE END I2C1_Init 2 */
@@ -799,15 +782,13 @@ PUTCHAR_PROTOTYPE
   return ch;
 }
 
-// 硬件中断入口（EXTI Line 1 对应所有 Pin 1）
 void EXTI1_IRQHandler(void) {
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1); // 确认是 Pin 1 触发
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
 }
 
-// 中断回调函数：当 BUSY 引脚变高时执行
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == GPIO_PIN_1) {
-        mp3_finished_flag = 1U; // 竖起“播完了”的旗帜
+        mp3_finished_flag = 1U;
     }
 }
 
